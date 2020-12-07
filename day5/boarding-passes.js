@@ -21,6 +21,8 @@ class Options {
     }
 }
 
+const getId = (row, col) => (row * 8) + col
+
 const boardingPasses = Fs.readFileSync('./input.txt', 'utf-8').split('\n').filter(l => l.trim()).map(code => {
     const rows = new Options(128)
     for (const char of code.slice(0, 7)) {
@@ -42,9 +44,19 @@ const boardingPasses = Fs.readFileSync('./input.txt', 'utf-8').split('\n').filte
     
     const row = rows.final()
     const col = cols.final()
-    const id = (row * 8) + col
+    const id = getId(row, col)
     return { id, row, col }
 })
 
-console.log('highest seat id is', boardingPasses.reduce((acc, b) => Math.max(acc, b.id), -Infinity))
+const passesById = new Map(boardingPasses.map(b => [b.id, b]))
+
+rowLoop: for (let row = 1; row < 127; row ++) {
+    for (let col = 0; col < 8; col ++) {
+        const id = getId(row, col)
+        if (!passesById.has(id) && passesById.has(id + 1) && passesById.has(id - 1)) {
+            console.log('my seat id is', id)
+            break rowLoop;
+        }
+    }
+}
 
