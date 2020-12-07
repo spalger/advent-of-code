@@ -1,19 +1,31 @@
 const Fs = require('fs')
-const numbers = Fs.readFileSync('./expense-report.txt', 'utf-8').split('\n').map(l => parseInt(l.trim(), 10)).filter(n => !Number.isNaN(n))
+const numbers = Fs.readFileSync('./expense-report.txt', 'utf-8')
+  .split('\n')
+  .map((l) => parseInt(l.trim(), 10))
+  .filter((n) => !Number.isNaN(n))
 
 for (const [ai, a] of numbers.entries()) {
-    for (const [bi, b] of numbers.entries()) {
-        for (const [ci, c] of numbers.entries()) {
-            if (new Set([ai, bi, ci]).size !== 3) {
-                continue;
-            }
+  for (const [bi, b] of numbers.entries()) {
+    for (const [ci, c] of numbers.entries()) {
+      if (new Set([ai, bi, ci]).size !== 3) {
+        continue
+      }
 
-            if (a + b + c === 2020) {
-                console.log('sum of', a, 'and', b, 'and', c, 'is 2020 and they multiply to', a * b * c)
-                process.exit();
-            }
-        }
+      if (a + b + c === 2020) {
+        console.log(
+          'sum of',
+          a,
+          'and',
+          b,
+          'and',
+          c,
+          'is 2020 and they multiply to',
+          a * b * c,
+        )
+        process.exit()
+      }
     }
+  }
 }
 
 console.log('none of the numbers in your expense report sum to 2020')

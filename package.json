@@ -1,0 +1,20 @@
+{
+  "name": "advent-of-code-2020",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:spalger/advent-of-code-2020.git",
+  "author": "spalger <spalger@users.noreply.github.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.12.9",
+    "@babel/eslint-parser": "^7.12.1",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.1",
+    "@babel/plugin-proposal-optional-chaining": "^7.12.7",
+    "@babel/preset-env": "^7.12.7",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-prettier": "^3.2.0",
+    "prettier": "^2.2.1"
+  }
+}
