@@ -1,5 +1,11 @@
 const Fs = require('fs')
 
+/** @type {Rule[]} */
+const rules = []
+
+/** @type {Map<string, Rule>} */
+const rulesByType = new Map()
+
 class Rule {
   /**
    * @param {string} type
@@ -26,25 +32,33 @@ class Rule {
   canHold(type) {
     return this.contents.some((c) => c.type === type)
   }
-}
 
-/**
- * @type {Rule[]}
- */
-const rules = Fs.readFileSync('./input.txt', 'utf8')
-  .split('\n')
-  .filter((l) => l.trim())
-  .map((l) => {
-    const [containerType, contentsStr] = l.split(' bags contain ')
-    return new Rule(containerType, contentsStr)
-  })
-
-// start with a list of all rules that can immediately contain shiny gold bags and add rules which can contain those recursively
-const matches = new Set(rules.filter((r) => r.canHold('shiny gold')))
-for (const rule of matches) {
-  for (const r of rules.filter((r) => r.canHold(rule.type))) {
-    matches.add(r)
+  /**
+   * @returns {number}
+   */
+  countCountents() {
+    return this.contents.reduce(
+      (acc, content) =>
+        acc +
+        content.count +
+        content.count * rulesByType.get(content.type).countCountents(),
+      0,
+    )
   }
 }
 
-console.log(matches.size, 'bags could contain a "shiny gold" bag')
+Fs.readFileSync('./input.txt', 'utf8')
+  .split('\n')
+  .filter((l) => l.trim())
+  .forEach((l) => {
+    const [containerType, contentsStr] = l.split(' bags contain ')
+    const rule = new Rule(containerType, contentsStr)
+    rules.push(rule)
+    rulesByType.set(rule.type, rule)
+  })
+
+console.log(
+  'one "shiny gold" bag contains',
+  rulesByType.get('shiny gold').countCountents(),
+  'bags',
+)
