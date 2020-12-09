@@ -18,7 +18,9 @@ class Options {
 
   final() {
     if (this.options.length !== 1) {
-      throw new Error(`failed to parse, remaining options: ${row.options}`)
+      throw new Error(
+        `failed to parse, remaining options: ${this.options.join(', ')}`,
+      )
     }
     return this.options[0]
   }
