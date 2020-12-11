@@ -7,56 +7,64 @@ class Seatmap {
   constructor(rows) {
     this.changed = false
     this.rows = rows
-    this.rowWidth = rows[0].length
   }
 
-  *iterSeat() {
-    for (const [rowI, row] of this.rows.entries()) {
-      for (const [seatI, occupied] of row.entries()) {
+  *iterSeats() {
+    for (const [row, seats] of this.rows.entries()) {
+      for (const [i, occupied] of seats.entries()) {
         if (typeof occupied === 'boolean') {
-          yield { rowI, seatI, occupied }
+          yield { row, i, occupied }
         }
       }
     }
   }
 
-  isOccupied(rowI, seatI) {
-    return this.rows[rowI]?.[seatI] === true
+  isOutOfBounds(row, i) {
+    return (
+      row < 0 || i < 0 || row >= this.rows.length || i >= this.rows[0].length
+    )
   }
 
-  getOccupiedNeighborCount(rowI, seatI) {
+  getOccupiedVisibility(seat, deltaRow, deltaSeat) {
+    for (
+      let vRow = seat.row + deltaRow, vSeat = seat.i + deltaSeat;
+      !this.isOutOfBounds(vRow, vSeat);
+      vRow += deltaRow, vSeat += deltaSeat
+    ) {
+      const seat = this.rows[vRow][vSeat]
+      if (typeof seat === 'boolean') {
+        return seat
+      }
+    }
+    return false
+  }
+
+  countVisibleOccupied(seat) {
     let count = 0
-    if (this.isOccupied(rowI - 1, seatI - 1)) count++
-    if (this.isOccupied(rowI - 1, seatI)) count++
-    if (this.isOccupied(rowI - 1, seatI + 1)) count++
-    if (this.isOccupied(rowI, seatI - 1)) count++
-    if (this.isOccupied(rowI, seatI + 1)) count++
-    if (this.isOccupied(rowI + 1, seatI - 1)) count++
-    if (this.isOccupied(rowI + 1, seatI)) count++
-    if (this.isOccupied(rowI + 1, seatI + 1)) count++
+    if (this.getOccupiedVisibility(seat, -1, -1)) count++
+    if (this.getOccupiedVisibility(seat, -1, 0)) count++
+    if (this.getOccupiedVisibility(seat, -1, 1)) count++
+    if (this.getOccupiedVisibility(seat, 0, -1)) count++
+    if (this.getOccupiedVisibility(seat, 0, 1)) count++
+    if (this.getOccupiedVisibility(seat, 1, -1)) count++
+    if (this.getOccupiedVisibility(seat, 1, 0)) count++
+    if (this.getOccupiedVisibility(seat, 1, 1)) count++
     return count
   }
 
-  toggle(rowI, seatI) {
+  toggle(seat) {
     this.changed = true
-    const current = this.rows[rowI]?.[seatI]
-    if (typeof current === 'boolean') {
-      this.rows[rowI][seatI] = !current
-    } else {
-      throw new RangeError(
-        `row:${rowI} seat:${seatI} is not a valid seat position`,
-      )
-    }
+    this.rows[seat.row][seat.i] = !this.rows[seat.row][seat.i]
   }
 
   clone() {
     return new Seatmap(this.rows.map((row) => row.slice()))
   }
 
-  getOccupiedSeatCount() {
+  countOccupiedSeats() {
     let count = 0
-    for (const { occupied } of this.iterSeat()) {
-      if (occupied) {
+    for (const seat of this.iterSeats()) {
+      if (seat.occupied) {
         count++
       }
     }
@@ -74,12 +82,12 @@ const emptySeatmap = new Seatmap(
 for (let count = 1, seatmap = emptySeatmap; ; count++) {
   const newSeatmap = seatmap.clone()
 
-  for (const { rowI, seatI, occupied } of seatmap.iterSeat()) {
-    if (!occupied && seatmap.getOccupiedNeighborCount(rowI, seatI) === 0) {
-      newSeatmap.toggle(rowI, seatI)
+  for (const seat of seatmap.iterSeats()) {
+    if (!seat.occupied && seatmap.countVisibleOccupied(seat) === 0) {
+      newSeatmap.toggle(seat)
     }
-    if (occupied && seatmap.getOccupiedNeighborCount(rowI, seatI) >= 4) {
-      newSeatmap.toggle(rowI, seatI)
+    if (seat.occupied && seatmap.countVisibleOccupied(seat) >= 5) {
+      newSeatmap.toggle(seat)
     }
   }
 
@@ -92,7 +100,7 @@ for (let count = 1, seatmap = emptySeatmap; ; count++) {
     'seatmap stabilized after',
     count,
     'iterations with',
-    newSeatmap.getOccupiedSeatCount(),
+    newSeatmap.countOccupiedSeats(),
     'occupied seats',
   )
   break
