@@ -9,5 +9,6 @@ module.exports = {
   rules: {
     'prettier/prettier': 'error',
     'no-constant-condition': 'off',
+    'no-extra-semi': 'off',
   },
 }
