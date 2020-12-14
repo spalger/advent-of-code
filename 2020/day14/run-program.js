@@ -23,11 +23,14 @@ let mask
 const memory = new Map()
 
 const set = (addr, value) => {
-  if (addr.includes('X')) {
-    set(addr.replace('X', '1'), value)
-    set(addr.replace('X', '0'), value)
-  } else {
-    memory.set(addr, value)
+  const queue = [addr]
+  while (queue.length) {
+    const a = queue.shift()
+    if (a.includes('X')) {
+      queue.push(a.replace('X', '1'), a.replace('X', '0'))
+    } else {
+      memory.set(a, value)
+    }
   }
 }
 
