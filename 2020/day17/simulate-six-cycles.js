@@ -1,8 +1,8 @@
 const Fs = require('fs')
 
 function* neighbors(location) {
-  const [xStr, yStr, zStr] = location.split(',')
-  const [x, y, z] = [+xStr, +yStr, +zStr]
+  const [xStr, yStr, zStr, wStr] = location.split(',')
+  const [x, y, z, w] = [+xStr, +yStr, +zStr, +wStr]
 
   for (let xd = -1; xd <= 1; xd++) {
     const nx = x + xd
@@ -10,12 +10,15 @@ function* neighbors(location) {
       const ny = y + yd
       for (let zd = -1; zd <= 1; zd++) {
         const nz = z + zd
+        for (let wd = -1; wd <= 1; wd++) {
+          const nw = w + wd
 
-        if (x === nx && y === ny && z === nz) {
-          continue
+          if (x === nx && y === ny && z === nz && w === nw) {
+            continue
+          }
+
+          yield `${nx},${ny},${nz},${nw}`
         }
-
-        yield `${nx},${ny},${nz}`
       }
     }
   }
@@ -26,7 +29,7 @@ let activeCubes = new Set(
     .split('\n')
     .filter((l) => l.trim())
     .map((l, y) =>
-      l.split('').map((c, x) => (c === '#' ? `${x},${y},0` : undefined)),
+      l.split('').map((c, x) => (c === '#' ? `${x},${y},0,0` : undefined)),
     )
     .reduce((acc, row) => acc.concat(row))
     .filter((loc) => loc !== undefined),
