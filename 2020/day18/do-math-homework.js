@@ -46,13 +46,11 @@ function parse(input) {
   }
 }
 
-function evaluateAddition(expression) {
+function resolveAddition(expression) {
   return expression.reduce((acc, token, i, list) => {
     if (token === '+') {
-      return [
-        ...acc.slice(0, -1),
-        evaluate(acc[acc.length - 1]) + evaluate(list[i + 1]),
-      ]
+      acc.push(evaluate(acc.pop()) + evaluate(list[i + 1]))
+      return acc
     }
 
     // skip tokens after +
@@ -60,7 +58,8 @@ function evaluateAddition(expression) {
       return acc
     }
 
-    return [...acc, token]
+    acc.push(token)
+    return acc
   }, [])
 }
 
@@ -69,18 +68,10 @@ function evaluate(expression) {
     return expression
   }
 
-  return evaluateAddition(expression).reduce((acc, token, i, list) => {
-    if (acc === null) {
-      //initialize with the first value
-      return evaluate(token)
-    }
-
-    if (token === '*') {
-      return acc * evaluate(list[i + 1])
-    }
-
-    return acc
-  }, null)
+  return resolveAddition(expression).reduce(
+    (acc, token) => (token === '*' ? acc : acc * evaluate(token)),
+    1,
+  )
 }
 
 const problems = Fs.readFileSync('input.txt', 'utf-8')
