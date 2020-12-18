@@ -17,19 +17,33 @@ function parse(problem) {
   )
 }
 
+function evaluateAddition(expression) {
+  return expression.reduce((acc, token, i, list) => {
+    if (token === '+') {
+      return [
+        ...acc.slice(0, -1),
+        evaluate(acc[acc.length - 1]) + evaluate(list[i + 1]),
+      ]
+    }
+
+    // skip tokens after +
+    if (list[i - 1] === '+') {
+      return acc
+    }
+
+    return [...acc, token]
+  }, [])
+}
+
 function evaluate(expression) {
   if (typeof expression === 'number') {
     return expression
   }
 
-  return expression.reduce((acc, token, i, list) => {
+  return evaluateAddition(expression).reduce((acc, token, i, list) => {
     if (acc === null) {
       //initialize with the first value
       return evaluate(token)
-    }
-
-    if (token === '+') {
-      return acc + evaluate(list[i + 1])
     }
 
     if (token === '*') {
