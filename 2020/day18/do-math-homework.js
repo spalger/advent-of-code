@@ -1,4 +1,5 @@
 const Fs = require('fs')
+const { performance } = require('perf_hooks')
 
 /** @param {string} input */
 function parse(input) {
@@ -87,7 +88,12 @@ const problems = Fs.readFileSync('input.txt', 'utf-8')
   .filter((l) => l.trim())
   .map((problem) => parse(problem).tokens)
 
+const start = performance.now()
+const solutions = problems.map(evaluate)
+const end = performance.now()
+
 console.log(
   'the sum of the solutions of each problem is',
-  problems.map(evaluate).reduce((acc, n) => acc + n),
+  solutions.reduce((acc, n) => acc + n),
+  `(took ${(end - start).toFixed(3)} ms)`,
 )
