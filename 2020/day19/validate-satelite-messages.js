@@ -3,7 +3,7 @@ const [rulesChunk, messagesChunk] = Fs.readFileSync('input.txt', 'utf-8').split(
   '\n\n',
 )
 
-/** @typedef {{name: string, char: string}|{name: string, options: Array<string[]>}}} Rule */
+/** @typedef {{name: string, char: string}|{name: string, options: Array<string[]>}} Rule */
 
 /** @type {Rule[]} */
 const rules = rulesChunk
@@ -29,46 +29,57 @@ const rulesByName = new Map(rules.map((r) => [r.name, r]))
 
 const messages = messagesChunk.split('\n').filter((l) => l.trim())
 
-const matchRule = (chars, rule) => {
-  if (rule.char) {
-    if (chars[0] === rule.char) {
-      return {
-        consumed: rule.char,
-      }
-    }
+const matchRule0 = (input) => {
+  // array of parsing tasks that keep have consumed some amount of the input and
+  // have some unresolved refs. When any of those refs resolve to more refs a new
+  // job is created to resolve those. Once all the refs are resolved, if the entire
+  // input is consumed we will return true
+  const tasks = rulesByName.get('0').options.map((option) => ({
+    consumed: '',
+    refs: option.slice(),
+  }))
 
-    return
-  }
+  while (tasks.length) {
+    const task = tasks.shift()
 
-  checkOptions: for (const option of rule.options) {
-    let consumed = ''
-    for (let i = 0; i < option.length; i++) {
-      const ref = rulesByName.get(option[i])
-      const match = matchRule(chars.slice(consumed.length), ref)
+    const [ref, ...nextRefs] = task.refs
+    const rule = rulesByName.get(ref)
+
+    if (rule.options) {
+      // substitute this ref with the options it includes, including one task for each possible path
+      tasks.unshift(
+        ...rule.options.map((subRefs) => ({
+          consumed: task.consumed,
+          refs: [...subRefs, ...nextRefs],
+        })),
+      )
+    } else {
+      // concrete rule is able to actually consume input characters
+      const match = rule.char === input.charAt(task.consumed.length)
+
       if (!match) {
-        continue checkOptions
+        continue
       }
 
-      consumed += match.consumed
+      const consumed = task.consumed + rule.char
+      const moreRefs = !!nextRefs.length
 
-      // if we have consumed the whole message but haven't matched the entire option then we don't actually match
-      if (consumed.length >= chars.length && i < option.length - 1) {
-        continue checkOptions
+      if (!moreRefs) {
+        if (input !== consumed) {
+          continue
+        }
+
+        return true
       }
-    }
 
-    return {
-      consumed,
+      tasks.unshift({
+        consumed: task.consumed + rule.char,
+        refs: nextRefs,
+      })
     }
   }
 
-  return
+  return false
 }
 
-console.log(
-  messages.filter((msg) => {
-    const match = matchRule(msg, rulesByName.get('0'))
-    return match?.consumed === msg
-  }).length,
-  'messages match rule 0',
-)
+console.log(messages.filter(matchRule0).length, 'messages match rule 0')
