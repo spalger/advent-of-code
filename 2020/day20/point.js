@@ -45,6 +45,10 @@ class Point {
     if (this.x > 0) neighbors.push(this.left())
     return neighbors
   }
+
+  toString() {
+    return `(${this.x},${this.y})`
+  }
 }
 
 module.exports = { p }

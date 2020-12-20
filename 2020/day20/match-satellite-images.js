@@ -1,88 +1,6 @@
 const Fs = require('fs')
 const { p } = require('./point')
 
-const getCompareEdges = (aPoint, bPoint) => {
-  if (aPoint === bPoint.left()) {
-    return ['right', 'left']
-  }
-  if (aPoint === bPoint.right()) {
-    return ['left', 'right']
-  }
-  if (aPoint === bPoint.above()) {
-    return ['bottom', 'top']
-  }
-  if (aPoint === bPoint.below()) {
-    return ['top', 'bottom']
-  }
-  throw new Error('aPoint and bPoint are not neighbors')
-}
-
-class Composite {
-  /**
-   * @param {number} size
-   * @param {Map<Point,Image>} contents
-   */
-  constructor(size, contents) {
-    this.size = size
-    this.contents = contents
-  }
-
-  isFilled() {
-    return this.contents.size === this.size * this.size
-  }
-
-  getFillablePoint() {
-    if (!this.contents.size) {
-      return p(0, 0)
-    }
-
-    for (const point of this.contents.keys()) {
-      for (const nPoint of point.neighbors(this.size - 1)) {
-        if (!this.contents.has(nPoint)) {
-          return nPoint
-        }
-      }
-    }
-  }
-
-  /**
-   * @param {Image} image
-   * @param {Point} point
-   */
-  fillPoint(image, point) {
-    for (const nPoint of point.neighbors(this.size - 1)) {
-      const nImage = this.contents.get(nPoint)
-      if (!nImage) {
-        continue
-      }
-
-      const [edge, nEdge] = getCompareEdges(point, nPoint)
-      if (image.edges.get(edge) !== nImage.edges.get(nEdge)) {
-        // this image can not be placed at this point because it
-        // conflicts with the existing contents of the composite
-        return
-      }
-    }
-
-    const newContents = new Map(this.contents)
-    newContents.set(point, image)
-    return new Composite(this.size, newContents)
-  }
-
-  toString() {
-    let str = ''
-    for (let y = 0; y < this.size; y++) {
-      for (let x = 0; x < this.size; x++) {
-        const img = this.contents.get(p(x, y))
-        str += img ? ` ${img.id} ` : `  --  `
-      }
-
-      str += '\n'
-    }
-    return str
-  }
-}
-
 class Image {
   static fromInput(imageData) {
     const [title, ...pixelRows] = imageData.trim().split('\n')
@@ -98,12 +16,10 @@ class Image {
   constructor(id, pixels) {
     this.id = id
     this.pixels = pixels
-    this.edges = new Map([
-      ['top', this.pixels[0].join('')],
-      ['right', this.pixels.map((r) => r[r.length - 1]).join('')],
-      ['bottom', this.pixels[this.pixels.length - 1].join('')],
-      ['left', this.pixels.map((r) => r[0]).join('')],
-    ])
+    this.top = this.pixels[0].join('')
+    this.right = this.pixels.map((r) => r[r.length - 1]).join('')
+    this.bottom = this.pixels[this.pixels.length - 1].join('')
+    this.left = this.pixels.map((r) => r[0]).join('')
   }
 
   _rotate() {
@@ -148,62 +64,74 @@ class Image {
 
 const images = Fs.readFileSync('input.txt', 'utf-8')
   .split('\n\n')
+  .filter((i) => i.trim())
   .map((d) => Image.fromInput(d))
 
-const compositeSize = Math.sqrt(images.length)
+const width = Math.sqrt(images.length)
 
-if (compositeSize !== parseInt(compositeSize)) {
-  throw new Error(`image size of ${compositeSize} is not valid`)
+if (width !== parseInt(width)) {
+  throw new Error(`image size of ${width} is not valid`)
 }
 
-const compositeImages = () => {
+let maxArrangement = 0
+
+const arrangeImages = () => {
   const tasks = [
     {
       unmatched: images,
-      composite: new Composite(compositeSize, new Map()),
+      arrangement: new Map(),
     },
   ]
 
   while (tasks.length) {
-    // attempt to place an unmatched image in a "fillable" space in the
-    // composite image, prioritizing spaces next to images so that we
-    // can validate compatibility between images. Successfully filling
-    // a point in the composite creates a new composite with the image
-    // in place. The new composite is placed at the top of the queue
-    // to be worked on next
+    // attempt to place an unmatched image in the next space in the
+    // arrangement, starting from 0,0 and progressing to the right until
+    // we reach the end of the row, then moving to 0,1, and so on
 
-    const { unmatched, composite } = tasks.shift()
-    const fillable = composite.getFillablePoint()
+    const { unmatched, arrangement } = tasks.shift()
+    maxArrangement = Math.max(maxArrangement, arrangement.size)
+    const point = p(
+      arrangement.size % width,
+      Math.floor(arrangement.size / width),
+    )
+    const left = point.x > 0 ? arrangement.get(point.left()) : null
+    const above = point.y > 0 ? arrangement.get(point.above()) : null
 
-    for (const image of unmatched) {
-      for (const orientation of image.orientations()) {
-        const newComposite = composite.fillPoint(orientation, fillable)
-        if (!newComposite) {
+    for (let i = 0; i < unmatched.length; i++) {
+      for (const img of unmatched[i].orientations()) {
+        if (left && img.left !== left.right) {
+          continue
+        }
+        if (above && img.top !== above.bottom) {
           continue
         }
 
-        if (newComposite.isFilled()) {
-          return newComposite
+        const newArragement = new Map(arrangement)
+        newArragement.set(point, img)
+
+        if (newArragement.size === images.length) {
+          return newArragement
         }
 
         tasks.unshift({
-          unmatched: unmatched.filter((img) => img !== image),
-          composite: newComposite,
+          unmatched: [...unmatched.slice(0, i), ...unmatched.slice(i + 1)],
+          arrangement: newArragement,
         })
       }
     }
   }
 }
 
-const composite = compositeImages()
-console.log(`composite:\n${composite}`)
+const arrangement = arrangeImages()
+console.log(`arrangement:\n${arrangement}`)
+console.log('max arrangement size =', maxArrangement)
 
-if (composite) {
+if (arrangement) {
   const corners = [
-    composite.contents.get(p(0, 0)).id,
-    composite.contents.get(p(compositeSize - 1, 0)).id,
-    composite.contents.get(p(compositeSize - 1, compositeSize - 1)).id,
-    composite.contents.get(p(0, compositeSize - 1)).id,
+    arrangement.get(p(0, 0)).id,
+    arrangement.get(p(width - 1, 0)).id,
+    arrangement.get(p(width - 1, width - 1)).id,
+    arrangement.get(p(0, width - 1)).id,
   ]
 
   console.log(
