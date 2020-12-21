@@ -96,3 +96,11 @@ console.log(
   sum,
   'times',
 )
+
+console.log(
+  'the canonical dangerous ingredient list is',
+  Array.from(allergenSources.entries())
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([ing]) => ing)
+    .join(','),
+)
