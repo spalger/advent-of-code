@@ -105,7 +105,7 @@ for (let y = width - 1; y >= 0; y--) {
   compositePixels.push(row)
 }
 
-const seamonsterOffsets = [
+const seaMonsterOffsets = [
   p(0, 1),
   p(1, 0),
   p(4, 0),
@@ -130,29 +130,16 @@ const highlightSeaMonsters = (src) => {
   )
   const width = img.pixels.length
   let count = 0
-  let partial = 0
 
-  // iterate from y 3-less than the max to try and find a seamonster
+  // iterate from y 3-less than the max to try and find a sea monster
   for (let y = width - 3; y >= 0; y--) {
     xLoop: for (let x = 0; x < width; x++) {
       const origin = p(x, y)
 
-      // detect the seamonster by checking each offset for a #
-      for (const [i, offset] of seamonsterOffsets.entries()) {
+      // detect the sea monster by checking each offset for a #
+      for (const offset of seaMonsterOffsets) {
         const p = origin.add(offset)
         if (img.get(p) !== '#') {
-          if (i > 5) {
-            partial += 1
-
-            // highlight the partial monster
-            for (const po of seamonsterOffsets) {
-              const pp = origin.add(po)
-              if (img.get(pp) === '#') {
-                img.set(pp, '@')
-              }
-            }
-          }
-
           // if any offset is not a # then abort the loop and move onto the next origin
           continue xLoop
         }
@@ -161,7 +148,7 @@ const highlightSeaMonsters = (src) => {
       // count the found monsters
       count += 1
       // highlight the monster by changing each pixel to O
-      for (const offset of seamonsterOffsets) {
+      for (const offset of seaMonsterOffsets) {
         img.set(origin.add(offset), 'O')
       }
     }
@@ -170,12 +157,6 @@ const highlightSeaMonsters = (src) => {
   if (count > 0) {
     return img
   }
-
-  if (partial) {
-    console.log(partial, 'partial matches in', src.desc)
-    console.log(img.toString())
-    console.log('\n\n')
-  }
 }
 
 let composite = new Image('composite', compositePixels)
@@ -183,8 +164,16 @@ let composite = new Image('composite', compositePixels)
 for (const img of getAllOrientations(composite)) {
   const highlighted = highlightSeaMonsters(img)
   if (highlighted) {
-    console.log('found seamonsters\n')
+    console.log('found sea monsters\n')
     console.log(highlighted.toString())
+    console.log()
+    let waveCount = 0
+    for (let p of highlighted.iter()) {
+      if (highlighted.get(p) === '#') {
+        waveCount++
+      }
+    }
+    console.log('there are', waveCount, 'waves in the water')
     console.log('\n\n')
     break
   }

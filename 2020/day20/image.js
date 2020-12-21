@@ -1,4 +1,5 @@
 const chalk = require('chalk')
+const { p } = require('./point')
 
 const inverse = (dir) => {
   if (dir === 'left') return 'right'
@@ -56,6 +57,14 @@ class Image {
     this.pixels[this.pixels.length - 1 - point.y][point.x] = pixel
   }
 
+  *iter() {
+    for (let x = 0; x < this.pixels.length; x++) {
+      for (let y = 0; y < this.pixels.length; y++) {
+        yield p(x, y)
+      }
+    }
+  }
+
   findNeighbors(orientationsById) {
     const neighbors = new Map()
 
@@ -97,16 +106,16 @@ class Image {
           .join('')}`
       })
       .reduce((acc, row, i) => {
-        // const y = this.pixels.length - 1 - i
-        // if (y % 10 === 0) {
-        //   return [
-        //     ...acc,
-        //     row,
-        //     `   ${this.pixels
-        //       .map((_, x) => (x % 10 === 0 ? "'" : ' '))
-        //       .join('')}`,
-        //   ]
-        // }
+        const y = this.pixels.length - 1 - i
+        if (y % 10 === 0) {
+          return [
+            ...acc,
+            row,
+            `   ${this.pixels
+              .map((_, x) => (x % 10 === 0 ? "'" : ' '))
+              .join('')}`,
+          ]
+        }
 
         return [...acc, row]
       }, [])

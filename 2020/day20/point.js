@@ -30,11 +30,11 @@ class Point {
   }
 
   bottom() {
-    return p(this.x, this.y + 1)
+    return p(this.x, this.y - 1)
   }
 
   top() {
-    return p(this.x, this.y - 1)
+    return p(this.x, this.y + 1)
   }
 
   add(offset) {
