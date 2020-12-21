@@ -1,7 +1,7 @@
 /** @type {Map<number, Map<number, Point>>} */
 const pointCache = new Map()
 
-const p = (x, y) => {
+export const p = (x, y) => {
   let ys = pointCache.get(x)
   if (!ys) {
     ys = new Map()
@@ -62,5 +62,3 @@ class Point {
     return this !== p && this.x >= p.x && this.y > p.y
   }
 }
-
-module.exports = { p }

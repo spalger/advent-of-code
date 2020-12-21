@@ -1,35 +1,35 @@
-const Fs = require('fs')
+export function run(input) {
+  const passwords = input
+    .split('\n')
+    .filter((l) => l.trim())
+    .map((l) => {
+      const match = l.match(/^(\d+)-(\d+) (\w): (.+)/)
+      if (!match) {
+        throw new Error(`line doesn't match expected pattern: [${l}]`)
+      }
 
-const passwords = Fs.readFileSync('./input.txt', 'utf8')
-  .split('\n')
-  .filter((l) => l.trim())
-  .map((l) => {
-    const match = l.match(/^(\d+)-(\d+) (\w): (.+)/)
-    if (!match) {
-      throw new Error(`line doesn't match expected pattern: [${l}]`)
-    }
+      const [, min, max, letter, password] = match
+      let count = 0
+      let valid = true
 
-    const [, min, max, letter, password] = match
-    let count = 0
-    let valid = true
-
-    for (const char of password) {
-      if (char === letter) {
-        count += 1
-        if (count > +max) {
-          valid = false
-          break
+      for (const char of password) {
+        if (char === letter) {
+          count += 1
+          if (count > +max) {
+            valid = false
+            break
+          }
         }
       }
-    }
 
-    if (valid && count < +min) {
-      valid = false
-    }
+      if (valid && count < +min) {
+        valid = false
+      }
 
-    return { password, min, max, letter, valid }
-  })
+      return { password, min, max, letter, valid }
+    })
 
-const valid = passwords.filter((p) => p.valid)
+  const valid = passwords.filter((p) => p.valid)
 
-console.log(valid.length, 'of', passwords.length, 'are valid')
+  console.log(valid.length, 'of', passwords.length, 'are valid')
+}

@@ -1,5 +1,5 @@
-const chalk = require('chalk')
-const { p } = require('./point')
+import chalk from 'chalk'
+import { p } from './point'
 
 const inverse = (dir) => {
   if (dir === 'left') return 'right'
@@ -8,7 +8,7 @@ const inverse = (dir) => {
   if (dir === 'bottom') return 'top'
 }
 
-class Image {
+export class Image {
   static fromInput(imageData) {
     const [title, ...pixelRows] = imageData.trim().split('\n')
     const id = parseInt(title.split(' ')[1], 10)
@@ -122,5 +122,3 @@ class Image {
       .join('\n')
   }
 }
-
-module.exports = { Image }

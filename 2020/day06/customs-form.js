@@ -1,5 +1,3 @@
-const Fs = require('fs')
-
 class Ballot {
   groupSize = 0
   yes = new Map()
@@ -15,9 +13,8 @@ class Ballot {
   }
 }
 
-const ballots = Fs.readFileSync('./input.txt', 'utf-8')
-  .split('\n')
-  .reduce(
+export function run(input) {
+  const ballots = input.split('\n').reduce(
     (acc, l) => {
       if (!l.trim()) {
         return [new Ballot(), ...acc]
@@ -36,6 +33,7 @@ const ballots = Fs.readFileSync('./input.txt', 'utf-8')
     [new Ballot()],
   )
 
-const sum = ballots.reduce((acc, b) => acc + b.countOfAllYes(), 0)
+  const sum = ballots.reduce((acc, b) => acc + b.countOfAllYes(), 0)
 
-console.log('the sum of all yes "yes" is', sum)
+  console.log('the sum of all yes "yes" is', sum)
+}

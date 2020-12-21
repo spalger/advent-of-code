@@ -1,5 +1,3 @@
-const Fs = require('fs')
-
 class Seatmap {
   /**
    * @param {Array<Array<null|false|true>>} rows
@@ -72,36 +70,38 @@ class Seatmap {
   }
 }
 
-const emptySeatmap = new Seatmap(
-  Fs.readFileSync('input.txt', 'utf8')
-    .split('\n')
-    .filter((l) => l.trim())
-    .map((l) => l.split('').map((c) => (c === 'L' ? false : null))),
-)
-
-for (let count = 1, seatmap = emptySeatmap; ; count++) {
-  const newSeatmap = seatmap.clone()
-
-  for (const seat of seatmap.iterSeats()) {
-    if (!seat.occupied && seatmap.countVisibleOccupied(seat) === 0) {
-      newSeatmap.toggle(seat)
-    }
-    if (seat.occupied && seatmap.countVisibleOccupied(seat) >= 5) {
-      newSeatmap.toggle(seat)
-    }
-  }
-
-  if (newSeatmap.changed) {
-    seatmap = newSeatmap
-    continue
-  }
-
-  console.log(
-    'seatmap stabilized after',
-    count,
-    'iterations with',
-    newSeatmap.countOccupiedSeats(),
-    'occupied seats',
+export function run(input) {
+  const emptySeatmap = new Seatmap(
+    input
+      .split('\n')
+      .filter((l) => l.trim())
+      .map((l) => l.split('').map((c) => (c === 'L' ? false : null))),
   )
-  break
+
+  for (let count = 1, seatmap = emptySeatmap; ; count++) {
+    const newSeatmap = seatmap.clone()
+
+    for (const seat of seatmap.iterSeats()) {
+      if (!seat.occupied && seatmap.countVisibleOccupied(seat) === 0) {
+        newSeatmap.toggle(seat)
+      }
+      if (seat.occupied && seatmap.countVisibleOccupied(seat) >= 5) {
+        newSeatmap.toggle(seat)
+      }
+    }
+
+    if (newSeatmap.changed) {
+      seatmap = newSeatmap
+      continue
+    }
+
+    console.log(
+      'seatmap stabilized after',
+      count,
+      'iterations with',
+      newSeatmap.countOccupiedSeats(),
+      'occupied seats',
+    )
+    break
+  }
 }

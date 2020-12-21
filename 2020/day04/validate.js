@@ -1,5 +1,3 @@
-const Fs = require('fs')
-
 const FOUR_DIGITS_RE = /^\d{4}$/
 const NINE_DIGITS_RE = /^\d{9}$/
 const HEIGHT_RE = /^(\d+)(cm|in)$/
@@ -80,9 +78,8 @@ class Passport {
   }
 }
 
-const passports = Fs.readFileSync('./input.txt', 'utf-8')
-  .split('\n')
-  .reduce(
+export function run(input) {
+  const passports = input.split('\n').reduce(
     (acc, l) => {
       if (l.trim() === '') {
         // end of passport data, inject new pending passport
@@ -99,6 +96,7 @@ const passports = Fs.readFileSync('./input.txt', 'utf-8')
     [new Passport()],
   )
 
-const valid = passports.filter((p) => p.isValid())
+  const valid = passports.filter((p) => p.isValid())
 
-console.log('there are', valid.length, 'valid passports')
+  console.log('there are', valid.length, 'valid passports')
+}

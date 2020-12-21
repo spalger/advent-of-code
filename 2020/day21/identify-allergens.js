@@ -1,5 +1,3 @@
-const Fs = require('fs')
-
 const countItems = (arrays) => {
   const counts = new Map()
 
@@ -26,81 +24,83 @@ const union = (arrays) => {
   return filterKeys(countItems(arrays), (_, value) => value === arrays.length)
 }
 
-const recipes = Fs.readFileSync('input.txt', 'utf-8')
-  .split('\n')
-  .filter((l) => l.trim())
-  .map((l) => {
-    const [ingList, allgList] = l
-      .split(/[()]/)
-      .map((c) => c.trim())
-      .filter(Boolean)
+export function run(input) {
+  const recipes = input
+    .split('\n')
+    .filter((l) => l.trim())
+    .map((l) => {
+      const [ingList, allgList] = l
+        .split(/[()]/)
+        .map((c) => c.trim())
+        .filter(Boolean)
 
-    const ingredients = ingList.split(' ').map((ing) => ing.trim())
-    const allergens = allgList
-      ?.split(/[, ]/)
-      .map((allg) => allg.trim())
-      .filter((allg) => allg && allg !== 'contains')
+      const ingredients = ingList.split(' ').map((ing) => ing.trim())
+      const allergens = allgList
+        ?.split(/[, ]/)
+        .map((allg) => allg.trim())
+        .filter((allg) => allg && allg !== 'contains')
 
-    return { ingredients, allergens }
-  })
+      return { ingredients, allergens }
+    })
 
-const allergenSources = new Map()
-const unidentifiedAllergens = new Map()
+  const allergenSources = new Map()
+  const unidentifiedAllergens = new Map()
 
-// init unidentifiedAllergens with the recipes which contain each allergen
-for (const r of recipes) {
-  for (const a of r.allergens) {
-    const state = unidentifiedAllergens.get(a)
-    if (!state) {
-      unidentifiedAllergens.set(a, { recipes: [r] })
-    } else {
-      state.recipes.push(r)
+  // init unidentifiedAllergens with the recipes which contain each allergen
+  for (const r of recipes) {
+    for (const a of r.allergens) {
+      const state = unidentifiedAllergens.get(a)
+      if (!state) {
+        unidentifiedAllergens.set(a, { recipes: [r] })
+      } else {
+        state.recipes.push(r)
+      }
     }
   }
-}
 
-while (unidentifiedAllergens.size) {
-  for (const [allergen, state] of unidentifiedAllergens) {
-    if (!state.options) {
-      // init options to the ingredients that are in every recipe
-      state.options = union(state.recipes.map((r) => r.ingredients))
-    }
+  while (unidentifiedAllergens.size) {
+    for (const [allergen, state] of unidentifiedAllergens) {
+      if (!state.options) {
+        // init options to the ingredients that are in every recipe
+        state.options = union(state.recipes.map((r) => r.ingredients))
+      }
 
-    if (allergenSources.size) {
-      // filter ingredient options which have already been identified
-      state.options = state.options.filter((ing) => !allergenSources.has(ing))
-    }
+      if (allergenSources.size) {
+        // filter ingredient options which have already been identified
+        state.options = state.options.filter((ing) => !allergenSources.has(ing))
+      }
 
-    if (state.options.length === 0) {
-      throw new Error(`alergen ${allergen} has had it's options reduced to 0`)
-    }
+      if (state.options.length === 0) {
+        throw new Error(`alergen ${allergen} has had it's options reduced to 0`)
+      }
 
-    if (state.options.length === 1) {
-      allergenSources.set(state.options[0], allergen)
-      unidentifiedAllergens.delete(allergen)
+      if (state.options.length === 1) {
+        allergenSources.set(state.options[0], allergen)
+        unidentifiedAllergens.delete(allergen)
+      }
     }
   }
-}
 
-console.log('allergenSources', allergenSources)
+  console.log('allergenSources', allergenSources)
 
-let sum = 0
-for (const [ing, count] of countItems(recipes.map((r) => r.ingredients))) {
-  if (!allergenSources.has(ing)) {
-    sum += count
+  let sum = 0
+  for (const [ing, count] of countItems(recipes.map((r) => r.ingredients))) {
+    if (!allergenSources.has(ing)) {
+      sum += count
+    }
   }
+
+  console.log(
+    'all non-allergen ingredients are found in the recipes',
+    sum,
+    'times',
+  )
+
+  console.log(
+    'the canonical dangerous ingredient list is',
+    Array.from(allergenSources.entries())
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([ing]) => ing)
+      .join(','),
+  )
 }
-
-console.log(
-  'all non-allergen ingredients are found in the recipes',
-  sum,
-  'times',
-)
-
-console.log(
-  'the canonical dangerous ingredient list is',
-  Array.from(allergenSources.entries())
-    .sort((a, b) => a[1].localeCompare(b[1]))
-    .map(([ing]) => ing)
-    .join(','),
-)
