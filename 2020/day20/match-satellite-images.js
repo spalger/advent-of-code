@@ -6,59 +6,63 @@ class Image {
     const [title, ...pixelRows] = imageData.trim().split('\n')
     const id = parseInt(title.split(' ')[1], 10)
     const pixels = pixelRows.map((row) => row.split(''))
-    return new Image(id, pixels)
+    return new Image(
+      id,
+      pixels[0].join(''),
+      pixels.map((r) => r[r.length - 1]).join(''),
+      pixels[pixels.length - 1].join(''),
+      pixels.map((r) => r[0]).join(''),
+    )
   }
 
   /**
    * @param {number} id
-   * @param {Array<string[]>} pixels
+   * @param {string} top
+   * @param {string} right
+   * @param {string} bottom
+   * @param {string} left
    */
-  constructor(id, pixels) {
+  constructor(id, top, right, bottom, left) {
     this.id = id
-    this.pixels = pixels
-    this.top = this.pixels[0].join('')
-    this.right = this.pixels.map((r) => r[r.length - 1]).join('')
-    this.bottom = this.pixels[this.pixels.length - 1].join('')
-    this.left = this.pixels.map((r) => r[0]).join('')
+    this.top = top
+    this.right = right
+    this.bottom = bottom
+    this.left = left
   }
 
-  _rotate() {
-    const max = this.pixels.length - 1
-    return new Image(
-      this.id,
-      this.pixels.map((r, y) => r.map((_, x) => this.pixels[max - x][y])),
-    )
-  }
+  findNeighbors(allImageOrientationsById) {
+    const others = new Map(allImageOrientationsById)
+    others.delete(this.id)
 
-  orientations() {
-    if (this._orientations) {
-      return this._orientations
+    const neighbors = new Map()
+
+    const findNeighbor = (dir, oppositeDir) => {
+      for (const [id, orientations] of others) {
+        for (const img of orientations) {
+          if (img[oppositeDir] === this[dir]) {
+            others.delete(id)
+            neighbors.set(dir, img)
+          }
+        }
+      }
     }
 
-    // 0, 90, 180, 270 degrees
-    this._orientations = [this]
-    while (this._orientations.length < 4) {
-      this._orientations.push(
-        this._orientations[this._orientations.length - 1]._rotate(),
-      )
-    }
+    findNeighbor('left', 'right')
+    findNeighbor('right', 'left')
+    findNeighbor('top', 'bottom')
+    findNeighbor('bottom', 'top')
 
-    // top <-> bottom
-    this._orientations.push(new Image(this.id, this.pixels.slice().reverse()))
-
-    // left <-> right
-    this._orientations.push(
-      new Image(
-        this.id,
-        this.pixels.map((r) => r.slice().reverse()),
-      ),
-    )
-
-    return this._orientations
+    return neighbors
   }
 
   toString() {
-    return this.pixels.map((r) => r.join('')).join('\n')
+    let printed = `${this.top}\n`
+    const center = ' '.repeat(this.top.length - 2)
+    for (let i = 1; i < this.left.length - 1; i++) {
+      printed += `${this.left[i]}${center}${this.right[i]}\n`
+    }
+    printed += this.bottom
+    return printed
   }
 }
 
@@ -67,75 +71,32 @@ const images = Fs.readFileSync('input.txt', 'utf-8')
   .filter((i) => i.trim())
   .map((d) => Image.fromInput(d))
 
-const width = Math.sqrt(images.length)
+const reverse = (str) => str.split('').reverse().join('')
+const rotate = (img) =>
+  new Image(img.id, img.left, img.top, img.right, img.bottom)
+const flipH = (img) =>
+  new Image(img.id, reverse(img.top), img.left, reverse(img.bottom), img.right)
+const flipV = (img) =>
+  new Image(img.id, img.bottom, reverse(img.right), img.top, reverse(img.left))
 
-if (width !== parseInt(width)) {
-  throw new Error(`image size of ${width} is not valid`)
-}
-
-let maxArrangement = 0
-
-const arrangeImages = () => {
-  const tasks = [
-    {
-      unmatched: images,
-      arrangement: new Map(),
-    },
-  ]
-
-  while (tasks.length) {
-    // attempt to place an unmatched image in the next space in the
-    // arrangement, starting from 0,0 and progressing to the right until
-    // we reach the end of the row, then moving to 0,1, and so on
-
-    const { unmatched, arrangement } = tasks.shift()
-    maxArrangement = Math.max(maxArrangement, arrangement.size)
-    const point = p(
-      arrangement.size % width,
-      Math.floor(arrangement.size / width),
-    )
-    const left = point.x > 0 ? arrangement.get(point.left()) : null
-    const above = point.y > 0 ? arrangement.get(point.above()) : null
-
-    for (let i = 0; i < unmatched.length; i++) {
-      for (const img of unmatched[i].orientations()) {
-        if (left && img.left !== left.right) {
-          continue
-        }
-        if (above && img.top !== above.bottom) {
-          continue
-        }
-
-        const newArragement = new Map(arrangement)
-        newArragement.set(point, img)
-
-        if (newArragement.size === images.length) {
-          return newArragement
-        }
-
-        tasks.unshift({
-          unmatched: [...unmatched.slice(0, i), ...unmatched.slice(i + 1)],
-          arrangement: newArragement,
-        })
-      }
-    }
+const imagesOrientationsById = new Map()
+for (const img of images) {
+  const orientations = []
+  for (let i = 0, source = img; i < 4; i++, source = rotate(source)) {
+    orientations.push(source, flipH(source), flipV(source))
   }
+  imagesOrientationsById.set(img.id, orientations)
 }
 
-const arrangement = arrangeImages()
-console.log(`arrangement:\n${arrangement}`)
-console.log('max arrangement size =', maxArrangement)
+const imagesWithTwoNeighbors = images.filter(
+  (img) => img.findNeighbors(imagesOrientationsById).size === 2,
+)
 
-if (arrangement) {
-  const corners = [
-    arrangement.get(p(0, 0)).id,
-    arrangement.get(p(width - 1, 0)).id,
-    arrangement.get(p(width - 1, width - 1)).id,
-    arrangement.get(p(0, width - 1)).id,
-  ]
-
-  console.log(
-    'product of the corners is',
-    corners.reduce((acc, id) => acc * id),
-  )
-}
+console.log(
+  'there are',
+  imagesWithTwoNeighbors.length,
+  'images with only two neighbors, ids:',
+  imagesWithTwoNeighbors.map((img) => img.id),
+  'product of the ids is',
+  imagesWithTwoNeighbors.reduce((acc, img) => acc * img.id, 1),
+)
