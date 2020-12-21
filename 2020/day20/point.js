@@ -29,25 +29,37 @@ class Point {
     return p(this.x + 1, this.y)
   }
 
-  below() {
+  bottom() {
     return p(this.x, this.y + 1)
   }
 
-  above() {
+  top() {
     return p(this.x, this.y - 1)
+  }
+
+  add(offset) {
+    return p(this.x + offset.x, this.y + offset.y)
   }
 
   neighbors(max) {
     const neighbors = []
-    if (this.y > 0) neighbors.push(this.above())
+    if (this.y > 0) neighbors.push(this.top())
     if (this.x < max) neighbors.push(this.right())
-    if (this.y < max) neighbors.push(this.below())
+    if (this.y < max) neighbors.push(this.bottom())
     if (this.x > 0) neighbors.push(this.left())
     return neighbors
   }
 
   toString() {
     return `(${this.x},${this.y})`
+  }
+
+  abs() {
+    return p(Math.abs(this.x), Math.abs(this.y))
+  }
+
+  isLarger(p) {
+    return this !== p && this.x >= p.x && this.y > p.y
   }
 }
 

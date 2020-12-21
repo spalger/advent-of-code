@@ -1,102 +1,191 @@
 const Fs = require('fs')
 const { p } = require('./point')
-
-class Image {
-  static fromInput(imageData) {
-    const [title, ...pixelRows] = imageData.trim().split('\n')
-    const id = parseInt(title.split(' ')[1], 10)
-    const pixels = pixelRows.map((row) => row.split(''))
-    return new Image(
-      id,
-      pixels[0].join(''),
-      pixels.map((r) => r[r.length - 1]).join(''),
-      pixels[pixels.length - 1].join(''),
-      pixels.map((r) => r[0]).join(''),
-    )
-  }
-
-  /**
-   * @param {number} id
-   * @param {string} top
-   * @param {string} right
-   * @param {string} bottom
-   * @param {string} left
-   */
-  constructor(id, top, right, bottom, left) {
-    this.id = id
-    this.top = top
-    this.right = right
-    this.bottom = bottom
-    this.left = left
-  }
-
-  findNeighbors(allImageOrientationsById) {
-    const others = new Map(allImageOrientationsById)
-    others.delete(this.id)
-
-    const neighbors = new Map()
-
-    const findNeighbor = (dir, oppositeDir) => {
-      for (const [id, orientations] of others) {
-        for (const img of orientations) {
-          if (img[oppositeDir] === this[dir]) {
-            others.delete(id)
-            neighbors.set(dir, img)
-          }
-        }
-      }
-    }
-
-    findNeighbor('left', 'right')
-    findNeighbor('right', 'left')
-    findNeighbor('top', 'bottom')
-    findNeighbor('bottom', 'top')
-
-    return neighbors
-  }
-
-  toString() {
-    let printed = `${this.top}\n`
-    const center = ' '.repeat(this.top.length - 2)
-    for (let i = 1; i < this.left.length - 1; i++) {
-      printed += `${this.left[i]}${center}${this.right[i]}\n`
-    }
-    printed += this.bottom
-    return printed
-  }
-}
+const { Image } = require('./image')
 
 const images = Fs.readFileSync('input.txt', 'utf-8')
   .split('\n\n')
   .filter((i) => i.trim())
   .map((d) => Image.fromInput(d))
 
-const reverse = (str) => str.split('').reverse().join('')
-const rotate = (img) =>
-  new Image(img.id, img.left, img.top, img.right, img.bottom)
-const flipH = (img) =>
-  new Image(img.id, reverse(img.top), img.left, reverse(img.bottom), img.right)
-const flipV = (img) =>
-  new Image(img.id, img.bottom, reverse(img.right), img.top, reverse(img.left))
-
-const imagesOrientationsById = new Map()
-for (const img of images) {
-  const orientations = []
-  for (let i = 0, source = img; i < 4; i++, source = rotate(source)) {
-    orientations.push(source, flipH(source), flipV(source))
-  }
-  imagesOrientationsById.set(img.id, orientations)
+const rotate = (img) => {
+  const w = img.pixels.length - 1
+  return new Image(
+    img.id,
+    img.pixels.map((r, y) => r.map((_, x) => img.pixels[w - x][y])),
+  )
 }
 
-const imagesWithTwoNeighbors = images.filter(
-  (img) => img.findNeighbors(imagesOrientationsById).size === 2,
-)
+const flipH = (img) =>
+  new Image(
+    img.id,
+    img.pixels.map((r) => r.slice().reverse()),
+  )
 
-console.log(
-  'there are',
-  imagesWithTwoNeighbors.length,
-  'images with only two neighbors, ids:',
-  imagesWithTwoNeighbors.map((img) => img.id),
-  'product of the ids is',
-  imagesWithTwoNeighbors.reduce((acc, img) => acc * img.id, 1),
+const flipV = (img) => new Image(img.id, img.pixels.slice().reverse())
+
+const getAllOrientations = (img) => {
+  const orientations = []
+  for (let i = 0, source = img; i < 4; i++, source = rotate(source)) {
+    source.desc = `${img.id} ${i * 90} degrees`
+    const flippedH = flipH(source)
+    flippedH.desc = `${source.desc} flipH`
+    const flippedV = flipV(source)
+    flippedV.desc = `${source.desc} flipV`
+    orientations.push(source, flippedH, flippedV)
+  }
+  return orientations
+}
+
+const allOrientations = new Map()
+for (const img of images) {
+  allOrientations.set(img.id, getAllOrientations(img))
+}
+
+let corner = images.find((img) => img.findNeighbors(allOrientations).size === 2)
+
+/** @type {Map<Point,Image>} */
+const map = new Map()
+
+const unmappedImages = new Map(allOrientations)
+map.set(p(0, 0), corner)
+unmappedImages.delete(corner.id)
+
+// fill in the map with the neighbors discovered by traversing from the first corner
+const queue = [p(0, 0)]
+while (queue.length) {
+  const point = queue.shift()
+  const img = map.get(point)
+
+  for (const [nDir, nImg] of img.findNeighbors(unmappedImages)) {
+    const nPoint = point[nDir]()
+    unmappedImages.delete(nImg.id)
+    map.set(nPoint, nImg)
+    queue.push(nPoint)
+  }
+}
+
+// shift the map so that x and y values are all positive
+const farCorner = Array.from(map.keys()).reduce((max, p) =>
+  max.abs().isLarger(p.abs()) ? max : p,
 )
+const absMap = new Map()
+for (const [point, image] of map) {
+  absMap.set(
+    p(
+      farCorner.x < 0 ? point.x - farCorner.x : point.x,
+      farCorner.y < 0 ? point.y - farCorner.y : point.y,
+    ),
+    image,
+  )
+}
+
+// write the pixel data from the map to the composite, one row at a time
+const compositePixels = []
+// width of the pixels we pull from each image, two less than width of pixel
+// data because we exclude the borders
+const imagePixelWidth = images[0].pixels.length - 2
+// width/height of composite in pixels
+const width = imagePixelWidth * Math.sqrt(images.length)
+
+for (let y = width - 1; y >= 0; y--) {
+  const row = []
+
+  for (let x = 0; x < width; x++) {
+    const imgPoint = p(
+      Math.floor(x / imagePixelWidth),
+      Math.floor(y / imagePixelWidth),
+    )
+    const img = absMap.get(imgPoint)
+
+    // add 1 to x and y to skip the border row/column
+    const pixelPoint = p((x % imagePixelWidth) + 1, (y % imagePixelWidth) + 1)
+    row.push(img.get(pixelPoint))
+  }
+
+  compositePixels.push(row)
+}
+
+const seamonsterOffsets = [
+  p(0, 1),
+  p(1, 0),
+  p(4, 0),
+  p(5, 1),
+  p(6, 1),
+  p(7, 0),
+  p(10, 0),
+  p(11, 1),
+  p(12, 1),
+  p(13, 0),
+  p(16, 0),
+  p(17, 1),
+  p(18, 1),
+  p(18, 2),
+  p(19, 1),
+]
+
+const highlightSeaMonsters = (src) => {
+  const img = new Image(
+    null,
+    src.pixels.map((r) => r.slice()),
+  )
+  const width = img.pixels.length
+  let count = 0
+  let partial = 0
+
+  // iterate from y 3-less than the max to try and find a seamonster
+  for (let y = width - 3; y >= 0; y--) {
+    xLoop: for (let x = 0; x < width; x++) {
+      const origin = p(x, y)
+
+      // detect the seamonster by checking each offset for a #
+      for (const [i, offset] of seamonsterOffsets.entries()) {
+        const p = origin.add(offset)
+        if (img.get(p) !== '#') {
+          if (i > 5) {
+            partial += 1
+
+            // highlight the partial monster
+            for (const po of seamonsterOffsets) {
+              const pp = origin.add(po)
+              if (img.get(pp) === '#') {
+                img.set(pp, '@')
+              }
+            }
+          }
+
+          // if any offset is not a # then abort the loop and move onto the next origin
+          continue xLoop
+        }
+      }
+
+      // count the found monsters
+      count += 1
+      // highlight the monster by changing each pixel to O
+      for (const offset of seamonsterOffsets) {
+        img.set(origin.add(offset), 'O')
+      }
+    }
+  }
+
+  if (count > 0) {
+    return img
+  }
+
+  if (partial) {
+    console.log(partial, 'partial matches in', src.desc)
+    console.log(img.toString())
+    console.log('\n\n')
+  }
+}
+
+let composite = new Image('composite', compositePixels)
+
+for (const img of getAllOrientations(composite)) {
+  const highlighted = highlightSeaMonsters(img)
+  if (highlighted) {
+    console.log('found seamonsters\n')
+    console.log(highlighted.toString())
+    console.log('\n\n')
+    break
+  }
+}
