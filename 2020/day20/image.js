@@ -90,10 +90,10 @@ class Image {
         return `${y < 10 ? '0' : ''}${y} ${r
           .map((p) => {
             if (p === '.') {
-              return ' '
+              return chalk.blue('█')
             }
             if (p === '#') {
-              return chalk.blue('█')
+              return chalk.bgBlue.cyan('#')
             }
             if (p === 'O') {
               return chalk.green('█')
@@ -105,17 +105,17 @@ class Image {
           })
           .join('')}`
       })
-      .reduce((acc, row, i) => {
-        const y = this.pixels.length - 1 - i
-        if (y % 10 === 0) {
-          return [
-            ...acc,
-            row,
-            `   ${this.pixels
-              .map((_, x) => (x % 10 === 0 ? "'" : ' '))
-              .join('')}`,
-          ]
-        }
+      .reduce((acc, row /*, i*/) => {
+        // const y = this.pixels.length - 1 - i
+        // if (y % 10 === 0) {
+        //   return [
+        //     ...acc,
+        //     row,
+        //     `   ${this.pixels
+        //       .map((_, x) => (x % 10 === 0 ? "'" : ' '))
+        //       .join('')}`,
+        //   ]
+        // }
 
         return [...acc, row]
       }, [])
