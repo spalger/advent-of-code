@@ -55,10 +55,15 @@ const allTasks = Fs.readdirSync(__dirname)
 
 function resolveTasks(argv) {
   const flags = getopts(argv, {
+    boolean: ['test'],
     alias: {
       i: 'input',
+      t: 'test',
     },
   })
+
+  const inputSelector =
+    flags.input === true ? 'input' : flags.test === true ? 'test' : flags.input
 
   const selector = relnorm(Path.resolve(flags._[0] || '.'))
   const [yearSelector, daySelector, solutionSelector] = selector.split('/')
@@ -72,9 +77,8 @@ function resolveTasks(argv) {
     .map((task) => {
       return {
         ...task,
-        ...task.getInputs(
-          typeof flags.input === 'boolean' ? 'input' : flags.input,
-        ),
+        ...task.getInputs(inputSelector),
+        runTestFunction: !inputSelector || inputSelector === 'test',
         solutions: task.getSolutions(solutionSelector),
       }
     })
@@ -109,11 +113,9 @@ function formatTime(ms) {
   return `${Math.floor(ms / MINUTE)}min ${formatTime(ms % MINUTE)}`
 }
 
-function runSolution(dir, name, input) {
-  const path = Path.resolve(dir, name)
-  const { run } = require(path)
+function exec(fn, input) {
   const start = performance.now()
-  run(input)
+  fn(input)
   const end = performance.now()
   console.log(chalk.grey(`took ${formatTime(end - start)}`))
 }
@@ -128,15 +130,24 @@ for (const task of tasks) {
   }
 
   for (const solution of task.solutions) {
+    const path = Path.resolve(task.dir, solution)
+    const { test, run } = require(path)
+
     for (const test of task.tests) {
       console.log(chalk.grey(`test(${solution}, ${test}):`))
-      runSolution(task.dir, solution, readInput(task.dir, test))
+      exec(run, readInput(task.dir, test))
+      console.log()
+    }
+
+    if (typeof test === 'function' && task.runTestFunction) {
+      console.log(chalk.grey(`test(${solution}):`))
+      exec(test)
       console.log()
     }
 
     for (const input of task.inputs) {
       console.log(chalk.grey(`run(${solution}, ${input}):`))
-      runSolution(task.dir, solution, readInput(task.dir, input))
+      exec(run, readInput(task.dir, input))
       console.log()
     }
   }
