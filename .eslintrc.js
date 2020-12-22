@@ -3,22 +3,16 @@ module.exports = {
     node: true,
     es2020: true,
   },
-  parser: '@babel/eslint-parser',
-  extends: ['prettier', 'eslint:recommended'],
-  plugins: ['prettier'],
+  parser: '@typescript-eslint/parser',
+  extends: [
+    'prettier',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+  ],
+  plugins: ['prettier', '@typescript-eslint'],
   rules: {
     'prettier/prettier': 'error',
-    'no-constant-condition': 'off',
-    'no-extra-semi': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-extra-semi': 'off',
   },
-  overrides: [
-    {
-      files: ['**/*.ts'],
-      parser: '@typescript-eslint/parser',
-      plugins: ['@typescript-eslint'],
-      rules: {
-        'prettier/prettier': 'error',
-      },
-    },
-  ],
 }

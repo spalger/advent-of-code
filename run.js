@@ -1,11 +1,21 @@
-require('@babel/register')({
-  extensions: ['.js', '.ts'],
-})
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 const { performance } = require('perf_hooks')
 const Path = require('path')
 const Fs = require('fs')
 const chalk = require('chalk')
+
+const SECOND = 1000
+const MINUTE = SECOND * 60
+
+const norm = (path) => path.split(Path.sep).join('/')
+const relnorm = (path) => norm(Path.relative(__dirname, path))
+
+require('@babel/register')({
+  configFile: Path.resolve(__dirname, 'babel.config.js'),
+  extensions: ['.js', '.ts'],
+  cache: true,
+})
 
 const allTasks = Fs.readdirSync(__dirname)
   .filter((n) => /^\d\d\d\d$/.test(n))
@@ -14,32 +24,31 @@ const allTasks = Fs.readdirSync(__dirname)
       ...tasks,
       ...Fs.readdirSync(Path.resolve(__dirname, year)).map((day) => {
         const dir = Path.resolve(__dirname, year, day)
-        const solutions = Fs.readdirSync(dir).filter(
-          (n) =>
-            ['.js', '.ts'].includes(Path.extname(n)) &&
-            typeof require(Path.resolve(dir, n)).run === 'function',
-        )
-
         const inputNames = Fs.readdirSync(Path.resolve(dir, 'inputs'))
         const tests = inputNames.filter((n) => n.includes('test'))
         const inputs = inputNames.filter((n) => !n.includes('test'))
+
+        const getSolutions = () =>
+          Fs.readdirSync(dir).filter(
+            (n) =>
+              ['.js', '.ts'].includes(Path.extname(n)) &&
+              typeof require(Path.resolve(dir, n)).run === 'function',
+          )
 
         return {
           dir,
           year,
           day,
-          solutions,
           tests,
           inputs,
+          getSolutions,
         }
       }),
     ]
   }, [])
 
-function resolveTasks(path = '') {
-  const selector = Path.relative(__dirname, Path.resolve(path))
-    .split(Path.sep)
-    .join('/')
+function resolveTasks(path = '.') {
+  const selector = relnorm(Path.resolve(path))
   const [yearSelector, daySelector, solutionSelector] = selector.split('/')
 
   const tasks = allTasks
@@ -49,15 +58,13 @@ function resolveTasks(path = '') {
         (!daySelector || task.day === daySelector),
     )
     .map((task) => {
-      if (!solutionSelector) {
-        return task
-      }
-
       return {
         ...task,
-        solutions: task.solutions.filter((solution) =>
-          solution.startsWith(solutionSelector),
-        ),
+        solutions: task
+          .getSolutions()
+          .filter((solution) =>
+            solutionSelector ? solution.startsWith(solutionSelector) : true,
+          ),
       }
     })
     .filter((task) => task.solutions.length)
@@ -80,9 +87,6 @@ function readInput(dir, name) {
     }
   }
 }
-
-const SECOND = 1000
-const MINUTE = SECOND * 60
 
 function formatTime(ms) {
   if (ms < SECOND) {
@@ -107,7 +111,9 @@ const tasks = resolveTasks(...process.argv.slice(2))
 
 for (const task of tasks) {
   if (tasks.length > 1) {
-    console.log(chalk.bold(`${task.year}/${task.day}:`))
+    console.log(
+      `${chalk.bgRed.green(task.year)}/${chalk.bgGreen.red(task.day)}:`,
+    )
   }
 
   for (const solution of task.solutions) {

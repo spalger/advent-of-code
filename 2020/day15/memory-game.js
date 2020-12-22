@@ -1,4 +1,4 @@
-const Assert = require('assert')
+import Assert from 'assert'
 
 function playGame(startingNumbers, rounds) {
   const history = new Map()

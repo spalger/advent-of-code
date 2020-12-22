@@ -17,8 +17,12 @@ function playCombat(player1Deck: number[], player2Deck: number[]) {
     }
     history.add(snapshot)
 
-    const card1 = player1Deck.shift()!
-    const card2 = player2Deck.shift()!
+    const card1 = player1Deck.shift()
+    const card2 = player2Deck.shift()
+
+    if (!card1 || !card2) {
+      throw new Error('missing card')
+    }
 
     if (player1Deck.length >= card1 && player2Deck.length >= card2) {
       const [player1SubDeck] = playCombat(
