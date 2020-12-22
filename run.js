@@ -41,13 +41,28 @@ const allTasks = Fs.readdirSync(__dirname)
           day,
 
           getInputs: (inputFilter) => {
-            const inputNames = Fs.readdirSync(
-              Path.resolve(dir, 'inputs'),
-            ).filter((i) => (inputFilter ? i.startsWith(inputFilter) : true))
+            const inputPaths = [
+              ...(Fs.existsSync(Path.resolve(dir, 'inputs'))
+                ? Fs.readdirSync(Path.resolve(dir, 'inputs')).map((n) =>
+                    Path.resolve(dir, 'inputs', n),
+                  )
+                : []),
+              ...(Fs.existsSync(Path.resolve(dir, 'input.txt'))
+                ? [Path.resolve(dir, 'input.txt')]
+                : []),
+            ]
 
             return {
-              tests: inputNames.filter((n) => n.includes('test')),
-              inputs: inputNames.filter((n) => !n.includes('test')),
+              tests: inputPaths.filter(
+                (p) =>
+                  Path.basename(p).includes('test') &&
+                  (!inputFilter || Path.basename(p).startsWith(inputFilter)),
+              ),
+              inputs: inputPaths.filter(
+                (p) =>
+                  !Path.basename(p).includes('test') &&
+                  (!inputFilter || Path.basename(p).startsWith(inputFilter)),
+              ),
             }
           },
 
@@ -93,7 +108,9 @@ function resolveTasks(argv) {
         ...task,
         ...task.getInputs(inputSelector),
         partNumber,
-        runTestFunction: !inputSelector || inputSelector === 'test',
+        runTestFunction:
+          partNumber === undefined &&
+          (!inputSelector || inputSelector === 'test'),
         solutions: task.getSolutions(solutionSelector),
       }
     })
@@ -106,9 +123,8 @@ function resolveTasks(argv) {
   return tasks
 }
 
-function readInput(dir, name) {
-  const path = Path.resolve(dir, 'inputs', name)
-  switch (Path.extname(name)) {
+function readInput(path) {
+  switch (Path.extname(path)) {
     case '.txt':
       return Fs.readFileSync(path, 'utf-8')
     case '.js':
@@ -150,7 +166,11 @@ for (const task of tasks) {
     const { test, run, part1, part2 } = require(path)
 
     for (const test of task.tests) {
-      exec(`test(${solution}, ${test}):`, run, readInput(task.dir, test))
+      exec(
+        `test(${solution}, ${Path.relative(task.dir, test)}):`,
+        run,
+        readInput(test),
+      )
     }
 
     if (typeof test === 'function' && task.runTestFunction) {
@@ -158,16 +178,17 @@ for (const task of tasks) {
     }
 
     for (const input of task.inputs) {
+      const relinput = Path.relative(task.dir, input)
       if ((task.partNumber ?? 1) === 1 && part1) {
-        exec(`${solution} part1(${input}):`, part1, readInput(task.dir, input))
+        exec(`${solution} part1(${relinput}):`, part1, readInput(input))
       }
 
       if ((task.partNumber ?? 2) === 2 && part2) {
-        exec(`${solution} part2(${input}):`, part2, readInput(task.dir, input))
+        exec(`${solution} part2(${relinput}):`, part2, readInput(input))
       }
 
       if (run) {
-        exec(`${solution} run(${input}):`, run, readInput(task.dir, input))
+        exec(`${solution} run(${relinput}):`, run, readInput(input))
       }
     }
   }
