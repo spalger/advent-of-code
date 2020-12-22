@@ -11,4 +11,14 @@ module.exports = {
     'no-constant-condition': 'off',
     'no-extra-semi': 'off',
   },
+  overrides: [
+    {
+      files: ['**/*.ts'],
+      parser: '@typescript-eslint/parser',
+      plugins: ['@typescript-eslint'],
+      rules: {
+        'prettier/prettier': 'error',
+      },
+    },
+  ],
 }

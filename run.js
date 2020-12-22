@@ -1,4 +1,6 @@
-require('@babel/register')
+require('@babel/register')({
+  extensions: ['.js', '.ts'],
+})
 
 const { performance } = require('perf_hooks')
 const Path = require('path')
