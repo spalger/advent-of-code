@@ -22,9 +22,8 @@ function isSolutionModule(path) {
   const module = require(path)
   return (
     module &&
-    (typeof module.run === 'function' ||
-      typeof module.part1 === 'function' ||
-      typeof module.part2 === 'function')
+    typeof (module.run || module.test || module.part1 || module.part2) ===
+      'function'
   )
 }
 
@@ -33,48 +32,50 @@ const allTasks = Fs.readdirSync(__dirname)
   .reduce((tasks, year) => {
     return [
       ...tasks,
-      ...Fs.readdirSync(Path.resolve(__dirname, year)).map((day) => {
-        const dir = Path.resolve(__dirname, year, day)
-        return {
-          dir,
-          year,
-          day,
+      ...Fs.readdirSync(Path.resolve(__dirname, year))
+        .map((day) => {
+          const dir = Path.resolve(__dirname, year, day)
+          return {
+            dir,
+            year,
+            day,
 
-          getInputs: (inputFilter) => {
-            const inputPaths = [
-              ...(Fs.existsSync(Path.resolve(dir, 'inputs'))
-                ? Fs.readdirSync(Path.resolve(dir, 'inputs')).map((n) =>
-                    Path.resolve(dir, 'inputs', n),
-                  )
-                : []),
-              ...(Fs.existsSync(Path.resolve(dir, 'input.txt'))
-                ? [Path.resolve(dir, 'input.txt')]
-                : []),
-            ]
+            getInputs: (inputFilter) => {
+              const inputPaths = [
+                ...(Fs.existsSync(Path.resolve(dir, 'inputs'))
+                  ? Fs.readdirSync(Path.resolve(dir, 'inputs')).map((n) =>
+                      Path.resolve(dir, 'inputs', n),
+                    )
+                  : []),
+                ...(Fs.existsSync(Path.resolve(dir, 'input.txt'))
+                  ? [Path.resolve(dir, 'input.txt')]
+                  : []),
+              ]
 
-            return {
-              tests: inputPaths.filter(
-                (p) =>
-                  Path.basename(p).includes('test') &&
-                  (!inputFilter || Path.basename(p).startsWith(inputFilter)),
+              return {
+                tests: inputPaths.filter(
+                  (p) =>
+                    Path.basename(p).includes('test') &&
+                    (!inputFilter || Path.basename(p).startsWith(inputFilter)),
+                ),
+                inputs: inputPaths.filter(
+                  (p) =>
+                    !Path.basename(p).includes('test') &&
+                    (!inputFilter || Path.basename(p).startsWith(inputFilter)),
+                ),
+              }
+            },
+
+            getSolutions: (solutionFilter) =>
+              Fs.readdirSync(dir).filter(
+                (n) =>
+                  ['.js', '.ts'].includes(Path.extname(n)) &&
+                  isSolutionModule(Path.resolve(dir, n)) &&
+                  (solutionFilter ? n.startsWith(solutionFilter) : true),
               ),
-              inputs: inputPaths.filter(
-                (p) =>
-                  !Path.basename(p).includes('test') &&
-                  (!inputFilter || Path.basename(p).startsWith(inputFilter)),
-              ),
-            }
-          },
-
-          getSolutions: (solutionFilter) =>
-            Fs.readdirSync(dir).filter(
-              (n) =>
-                ['.js', '.ts'].includes(Path.extname(n)) &&
-                isSolutionModule(Path.resolve(dir, n)) &&
-                (solutionFilter ? n.startsWith(solutionFilter) : true),
-            ),
-        }
-      }),
+          }
+        })
+        .filter((t) => /^day(0\d|\d\d)$/.test(t.day)),
     ]
   }, [])
 
