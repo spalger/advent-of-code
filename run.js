@@ -18,6 +18,16 @@ require('@babel/register')({
   cache: true,
 })
 
+function isSolutionModule(path) {
+  const module = require(path)
+  return (
+    module &&
+    (typeof module.run === 'function' ||
+      typeof module.part1 === 'function' ||
+      typeof module.part2 === 'function')
+  )
+}
+
 const allTasks = Fs.readdirSync(__dirname)
   .filter((n) => /^\d\d\d\d$/.test(n))
   .reduce((tasks, year) => {
@@ -45,7 +55,7 @@ const allTasks = Fs.readdirSync(__dirname)
             Fs.readdirSync(dir).filter(
               (n) =>
                 ['.js', '.ts'].includes(Path.extname(n)) &&
-                typeof require(Path.resolve(dir, n)).run === 'function' &&
+                isSolutionModule(Path.resolve(dir, n)) &&
                 (solutionFilter ? n.startsWith(solutionFilter) : true),
             ),
         }
@@ -56,14 +66,18 @@ const allTasks = Fs.readdirSync(__dirname)
 function resolveTasks(argv) {
   const flags = getopts(argv, {
     boolean: ['test'],
+    string: ['part'],
     alias: {
       i: 'input',
       t: 'test',
+      p: 'part',
     },
   })
 
   const inputSelector =
     flags.input === true ? 'input' : flags.test === true ? 'test' : flags.input
+
+  const partNumber = flags.part ? parseInt(flags.part, 10) : undefined
 
   const selector = relnorm(Path.resolve(flags._[0] || '.'))
   const [yearSelector, daySelector, solutionSelector] = selector.split('/')
@@ -78,6 +92,7 @@ function resolveTasks(argv) {
       return {
         ...task,
         ...task.getInputs(inputSelector),
+        partNumber,
         runTestFunction: !inputSelector || inputSelector === 'test',
         solutions: task.getSolutions(solutionSelector),
       }
@@ -113,11 +128,12 @@ function formatTime(ms) {
   return `${Math.floor(ms / MINUTE)}min ${formatTime(ms % MINUTE)}`
 }
 
-function exec(fn, input) {
+function exec(name, fn, input) {
+  console.log(chalk.grey(name))
   const start = performance.now()
   fn(input)
   const end = performance.now()
-  console.log(chalk.grey(`took ${formatTime(end - start)}`))
+  console.log(`${chalk.grey(`took ${formatTime(end - start)}`)}\n`)
 }
 
 const tasks = resolveTasks(process.argv.slice(2))
@@ -131,24 +147,28 @@ for (const task of tasks) {
 
   for (const solution of task.solutions) {
     const path = Path.resolve(task.dir, solution)
-    const { test, run } = require(path)
+    const { test, run, part1, part2 } = require(path)
 
     for (const test of task.tests) {
-      console.log(chalk.grey(`test(${solution}, ${test}):`))
-      exec(run, readInput(task.dir, test))
-      console.log()
+      exec(`test(${solution}, ${test}):`, run, readInput(task.dir, test))
     }
 
     if (typeof test === 'function' && task.runTestFunction) {
-      console.log(chalk.grey(`test(${solution}):`))
-      exec(test)
-      console.log()
+      exec(`test(${solution}):`, test)
     }
 
     for (const input of task.inputs) {
-      console.log(chalk.grey(`run(${solution}, ${input}):`))
-      exec(run, readInput(task.dir, input))
-      console.log()
+      if ((task.partNumber ?? 1) === 1 && part1) {
+        exec(`${solution} part1(${input}):`, part1, readInput(task.dir, input))
+      }
+
+      if ((task.partNumber ?? 2) === 2 && part2) {
+        exec(`${solution} part2(${input}):`, part2, readInput(task.dir, input))
+      }
+
+      if (run) {
+        exec(`${solution} run(${input}):`, run, readInput(task.dir, input))
+      }
     }
   }
 }
