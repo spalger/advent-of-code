@@ -4,6 +4,7 @@ const { performance } = require('perf_hooks')
 const Path = require('path')
 const Fs = require('fs')
 const chalk = require('chalk')
+const getopts = require('getopts')
 
 const SECOND = 1000
 const MINUTE = SECOND * 60
@@ -24,31 +25,42 @@ const allTasks = Fs.readdirSync(__dirname)
       ...tasks,
       ...Fs.readdirSync(Path.resolve(__dirname, year)).map((day) => {
         const dir = Path.resolve(__dirname, year, day)
-        const inputNames = Fs.readdirSync(Path.resolve(dir, 'inputs'))
-        const tests = inputNames.filter((n) => n.includes('test'))
-        const inputs = inputNames.filter((n) => !n.includes('test'))
-
-        const getSolutions = () =>
-          Fs.readdirSync(dir).filter(
-            (n) =>
-              ['.js', '.ts'].includes(Path.extname(n)) &&
-              typeof require(Path.resolve(dir, n)).run === 'function',
-          )
-
         return {
           dir,
           year,
           day,
-          tests,
-          inputs,
-          getSolutions,
+
+          getInputs: (inputFilter) => {
+            const inputNames = Fs.readdirSync(
+              Path.resolve(dir, 'inputs'),
+            ).filter((i) => (inputFilter ? i.startsWith(inputFilter) : true))
+
+            return {
+              tests: inputNames.filter((n) => n.includes('test')),
+              inputs: inputNames.filter((n) => !n.includes('test')),
+            }
+          },
+
+          getSolutions: (solutionFilter) =>
+            Fs.readdirSync(dir).filter(
+              (n) =>
+                ['.js', '.ts'].includes(Path.extname(n)) &&
+                typeof require(Path.resolve(dir, n)).run === 'function' &&
+                (solutionFilter ? n.startsWith(solutionFilter) : true),
+            ),
         }
       }),
     ]
   }, [])
 
-function resolveTasks(path = '.') {
-  const selector = relnorm(Path.resolve(path))
+function resolveTasks(argv) {
+  const flags = getopts(argv, {
+    alias: {
+      i: 'input',
+    },
+  })
+
+  const selector = relnorm(Path.resolve(flags._[0] || '.'))
   const [yearSelector, daySelector, solutionSelector] = selector.split('/')
 
   const tasks = allTasks
@@ -60,11 +72,10 @@ function resolveTasks(path = '.') {
     .map((task) => {
       return {
         ...task,
-        solutions: task
-          .getSolutions()
-          .filter((solution) =>
-            solutionSelector ? solution.startsWith(solutionSelector) : true,
-          ),
+        ...task.getInputs(
+          typeof flags.input === 'boolean' ? 'input' : flags.input,
+        ),
+        solutions: task.getSolutions(solutionSelector),
       }
     })
     .filter((task) => task.solutions.length)
@@ -107,7 +118,7 @@ function runSolution(dir, name, input) {
   console.log(chalk.grey(`took ${formatTime(end - start)}`))
 }
 
-const tasks = resolveTasks(...process.argv.slice(2))
+const tasks = resolveTasks(process.argv.slice(2))
 
 for (const task of tasks) {
   if (tasks.length > 1) {
