@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "strictNullChecks": false,
+    "strict": true,
     "target": "es2020",
     "lib": [
       "es2020"
