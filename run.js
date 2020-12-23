@@ -6,17 +6,32 @@ const Fs = require('fs')
 const chalk = require('chalk')
 const getopts = require('getopts')
 
-const SECOND = 1000
-const MINUTE = SECOND * 60
-
 const norm = (path) => path.split(Path.sep).join('/')
 const relnorm = (path) => norm(Path.relative(__dirname, path))
 
 require('@babel/register')({
-  configFile: Path.resolve(__dirname, 'babel.config.js'),
+  cwd: __dirname,
   extensions: ['.js', '.ts'],
   cache: true,
+  babelrc: false,
 })
+
+const allDays = Fs.readdirSync(__dirname)
+  .filter((n) => /^\d\d\d\d$/.test(n))
+  .reduce(
+    (acc, year) => [
+      ...acc,
+      ...Fs.readdirSync(Path.resolve(__dirname, year))
+        .filter((n) => /^day\d\d$/.test(n))
+        .map((day) => ({
+          dir: Path.resolve(__dirname, year, day),
+          year: parseInt(year, 10),
+          day: parseInt(day.replace('day', ''), 10),
+        })),
+    ],
+    [],
+  )
+  .sort((a, b) => a.year - b.year || a.day - b.day)
 
 function isSolutionModule(path) {
   const module = require(path)
@@ -27,114 +42,17 @@ function isSolutionModule(path) {
   )
 }
 
-const allTasks = Fs.readdirSync(__dirname)
-  .filter((n) => /^\d\d\d\d$/.test(n))
-  .reduce((tasks, year) => {
-    return [
-      ...tasks,
-      ...Fs.readdirSync(Path.resolve(__dirname, year))
-        .map((day) => {
-          const dir = Path.resolve(__dirname, year, day)
-          return {
-            dir,
-            year,
-            day,
-
-            getInputs: (inputFilter) => {
-              const inputPaths = [
-                ...(Fs.existsSync(Path.resolve(dir, 'inputs'))
-                  ? Fs.readdirSync(Path.resolve(dir, 'inputs')).map((n) =>
-                      Path.resolve(dir, 'inputs', n),
-                    )
-                  : []),
-                ...(Fs.existsSync(Path.resolve(dir, 'input.txt'))
-                  ? [Path.resolve(dir, 'input.txt')]
-                  : []),
-              ]
-
-              return {
-                tests: inputPaths.filter(
-                  (p) =>
-                    Path.basename(p).includes('test') &&
-                    (!inputFilter || Path.basename(p).startsWith(inputFilter)),
-                ),
-                inputs: inputPaths.filter(
-                  (p) =>
-                    !Path.basename(p).includes('test') &&
-                    (!inputFilter || Path.basename(p).startsWith(inputFilter)),
-                ),
-              }
-            },
-
-            getSolutions: (solutionFilter) =>
-              Fs.readdirSync(dir).filter(
-                (n) =>
-                  ['.js', '.ts'].includes(Path.extname(n)) &&
-                  isSolutionModule(Path.resolve(dir, n)) &&
-                  (solutionFilter ? n.startsWith(solutionFilter) : true),
-              ),
-          }
-        })
-        .filter((t) => /^day(0\d|\d\d)$/.test(t.day)),
-    ]
-  }, [])
-
-function resolveTasks(argv) {
-  const flags = getopts(argv, {
-    boolean: ['test'],
-    string: ['part'],
-    alias: {
-      i: 'input',
-      t: 'test',
-      p: 'part',
-    },
-  })
-
-  const inputSelector =
-    flags.input === true ? 'input' : flags.test === true ? 'test' : flags.input
-
-  const partNumber = flags.part ? parseInt(flags.part, 10) : undefined
-
-  const selector = relnorm(Path.resolve(flags._[0] || '.'))
-  const [yearSelector, daySelector, solutionSelector] = selector.split('/')
-
-  const tasks = allTasks
-    .filter(
-      (task) =>
-        (!yearSelector || task.year === yearSelector) &&
-        (!daySelector || task.day === daySelector),
-    )
-    .map((task) => {
-      return {
-        ...task,
-        ...task.getInputs(inputSelector),
-        partNumber,
-        runTestFunction:
-          partNumber === undefined &&
-          (!inputSelector || inputSelector === 'test'),
-        solutions: task.getSolutions(solutionSelector),
-      }
-    })
-    .filter((task) => task.solutions.length)
-
-  if (!tasks.length) {
-    throw new Error(`selector [${selector}] doesn't match any tasks`)
-  }
-
-  return tasks
+function getSolutions(dir, solutionFilter) {
+  return Fs.readdirSync(dir).filter(
+    (n) =>
+      ['.js', '.ts'].includes(Path.extname(n)) &&
+      isSolutionModule(Path.resolve(dir, n)) &&
+      (solutionFilter ? n.startsWith(solutionFilter) : true),
+  )
 }
 
-function readInput(path) {
-  switch (Path.extname(path)) {
-    case '.txt':
-      return Fs.readFileSync(path, 'utf-8')
-    case '.js':
-    case '.ts': {
-      return require(path).input
-    }
-  }
-}
-
+const SECOND = 1000
+const MINUTE = SECOND * 60
 function formatTime(ms) {
   if (ms < SECOND) {
     return `${ms.toFixed(1)}ms`
@@ -153,43 +71,79 @@ function exec(name, fn, input) {
   console.log(`${chalk.grey(`took ${formatTime(end - start)}`)}\n`)
 }
 
-const tasks = resolveTasks(process.argv.slice(2))
+const flags = getopts(process.argv.slice(2), {
+  boolean: ['test'],
+  string: ['part'],
+  alias: {
+    t: 'test',
+    p: 'part',
+  },
+})
 
-for (const task of tasks) {
-  if (tasks.length > 1) {
-    console.log(
-      `${chalk.bgRed.green(task.year)}/${chalk.bgGreen.red(task.day)}:`,
-    )
-  }
+const selector = relnorm(Path.resolve(flags._[0] || '.'))
+const [yearSelector, daySelector, solutionSelector] = selector
+  .split('/')
+  .map((input) => {
+    if (!input) return undefined
+    const n = parseInt(input.replace('day', ''), 10)
+    return Number.isNaN(n) ? input : n
+  })
 
-  for (const solution of task.solutions) {
-    const path = Path.resolve(task.dir, solution)
+const selectedDays = allDays.filter(
+  ({ year, day }) =>
+    (yearSelector === undefined || year === yearSelector) &&
+    (daySelector === undefined || day === daySelector),
+)
+
+if (!selectedDays.length) {
+  throw new Error(`${yearSelector}/${daySelector} doesn't match any days`)
+}
+
+for (const { dir, year, day } of selectedDays) {
+  console.log(chalk.bgGreen.red(` [${year}] day ${day}: `))
+
+  for (const solution of getSolutions(dir, solutionSelector)) {
+    const path = Path.resolve(dir, solution)
     const { test, run, part1, part2 } = require(path)
 
-    for (const test of task.tests) {
-      exec(
-        `test(${solution}, ${Path.relative(task.dir, test)}):`,
-        run,
-        readInput(test),
-      )
+    // determine what we're going to do
+    const tasks = []
+    if (flags.test === true) {
+      tasks.push('test')
+    }
+    if (flags.part !== '') {
+      tasks.push(`part${flags.part}`)
+    }
+    if (!flags.test && !flags.part) {
+      if (test) tasks.push('test')
+      if (part1) tasks.push('part1')
+      if (part2) tasks.push('part2')
+      if (run) tasks.push('run')
     }
 
-    if (typeof test === 'function' && task.runTestFunction) {
-      exec(`test(${solution}):`, test)
-    }
+    // load the input from file
+    const input = Fs.existsSync(Path.resolve(dir, 'input.txt'))
+      ? Fs.readFileSync(Path.resolve(dir, 'input.txt'), 'utf-8')
+      : undefined
+    const inDesc = input ? ', input.txt' : ''
 
-    for (const input of task.inputs) {
-      const relinput = Path.relative(task.dir, input)
-      if ((task.partNumber ?? 1) === 1 && part1) {
-        exec(`${solution} part1(${relinput}):`, part1, readInput(input))
-      }
-
-      if ((task.partNumber ?? 2) === 2 && part2) {
-        exec(`${solution} part2(${relinput}):`, part2, readInput(input))
-      }
-
-      if (run) {
-        exec(`${solution} run(${relinput}):`, run, readInput(input))
+    // execute our tasks
+    for (const task of tasks) {
+      switch (task) {
+        case 'test':
+          exec(`test(${solution}):`, test)
+          break
+        case 'part1':
+          exec(`part1(${solution}${inDesc})`, part1, input)
+          break
+        case 'part2':
+          exec(`part2(${solution}${inDesc})`, part2, input)
+          break
+        case 'run':
+          exec(`run(${solution}${inDesc})`, run, input)
+          break
+        default:
+          throw new Error(`unexpected task [${task}]`)
       }
     }
   }

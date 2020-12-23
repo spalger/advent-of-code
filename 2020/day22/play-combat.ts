@@ -1,3 +1,5 @@
+import dedent from 'dedent'
+
 function parseDeck(chunk: string) {
   return chunk
     .split('\n')
@@ -42,6 +44,24 @@ function playCombat(player1Deck: number[], player2Deck: number[]) {
   }
 
   return [player1Deck, player2Deck]
+}
+
+export function test() {
+  run(dedent`
+    Player 1:
+    9
+    2
+    6
+    3
+    1
+    
+    Player 2:
+    5
+    8
+    4
+    7
+    10
+  `)
 }
 
 export function run(input: string) {

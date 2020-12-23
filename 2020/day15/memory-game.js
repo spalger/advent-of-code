@@ -27,18 +27,53 @@ function playGame(startingNumbers, rounds) {
   return lastNum
 }
 
-export function run(inputs) {
-  for (const { startingNumbers, rounds, expect } of inputs) {
-    const lastNum = playGame(startingNumbers, rounds)
+export function test() {
+  const tests = [
+    {
+      startingNumbers: [1, 3, 2],
+      rounds: 2020,
+      expect: 1,
+    },
+    {
+      startingNumbers: [2, 1, 3],
+      rounds: 2020,
+      expect: 10,
+    },
+    {
+      startingNumbers: [1, 2, 3],
+      rounds: 2020,
+      expect: 27,
+    },
+    {
+      startingNumbers: [2, 3, 1],
+      rounds: 2020,
+      expect: 78,
+    },
+    {
+      startingNumbers: [3, 2, 1],
+      rounds: 2020,
+      expect: 438,
+    },
+    {
+      startingNumbers: [3, 1, 2],
+      rounds: 2020,
+      expect: 1836,
+    },
+  ]
 
-    if (expect === undefined) {
-      console.log('the answer is', lastNum)
-    } else {
-      Assert.strictEqual(
-        lastNum,
-        expect,
-        `${startingNumbers} should finish round ${rounds} with ${expect}`,
-      )
-    }
+  for (const { startingNumbers, rounds, expect } of tests) {
+    Assert.strictEqual(
+      playGame(startingNumbers, rounds),
+      expect,
+      `${startingNumbers} should finish round ${rounds} with ${expect}`,
+    )
   }
+}
+
+export function part1() {
+  console.log('the answer is', playGame([0, 1, 5, 10, 3, 12, 19], 2020))
+}
+
+export function part2() {
+  console.log('the answer is', playGame([0, 1, 5, 10, 3, 12, 19], 30000000))
 }
