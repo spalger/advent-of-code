@@ -14,6 +14,7 @@ module.exports = {
     'prettier/prettier': 'error',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-extra-semi': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
     'linebreak-style': ['error', 'unix'],
   },
 }
