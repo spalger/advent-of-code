@@ -100,7 +100,7 @@ if (!selectedDays.length) {
 }
 
 for (const { dir, year, day } of selectedDays) {
-  console.log(chalk.bgGreen.red(` [${year}] day ${day}: `))
+  console.log(chalk.bgGreen.red.bold(` [${year}] day ${day}: `))
 
   for (const solution of getSolutions(dir, solutionSelector)) {
     const path = Path.resolve(dir, solution)
