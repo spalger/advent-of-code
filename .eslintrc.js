@@ -16,5 +16,6 @@ module.exports = {
     '@typescript-eslint/no-extra-semi': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'linebreak-style': ['error', 'unix'],
+    'no-constant-condition': 'off',
   },
 }

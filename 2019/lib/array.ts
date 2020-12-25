@@ -23,3 +23,19 @@ export function intersect<T>(...arrays: Array<T[]>): T[] {
 
   return result
 }
+
+export function shift<T>(arr: T[]): T {
+  if (!arr.length) {
+    throw new RangeError('unable to shift from empty array')
+  }
+
+  return arr.shift() as T
+}
+
+export function pop<T>(arr: T[]): T {
+  if (!arr.length) {
+    throw new RangeError('unable to shift from empty array')
+  }
+
+  return arr.pop() as T
+}
