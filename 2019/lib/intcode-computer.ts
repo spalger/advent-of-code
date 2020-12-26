@@ -59,11 +59,37 @@ export function parseIntCode(code: string) {
   return code.split(',').map(toInt)
 }
 
+export class InputReq {}
+
+export class Output {
+  constructor(public readonly output: number) {}
+}
+
 export function runIntCode(source: string | number[], input: number[] = []) {
+  const output = []
+  const gen = intCodeGenerator(source)
+  let nextInput
+  while (true) {
+    const result = nextInput === undefined ? gen.next() : gen.next(nextInput)
+    nextInput = undefined
+
+    if (result.value instanceof Output) {
+      output.push(result.value.output)
+    }
+
+    if (result.value instanceof InputReq) {
+      nextInput = shift(input)
+    }
+
+    if (result.done) {
+      return output
+    }
+  }
+}
+
+export function* intCodeGenerator(source: string | number[]) {
   const mem = typeof source === 'string' ? parseIntCode(source) : source.slice()
   let i = 0
-
-  const output = []
 
   const get = (op: Op, paramI: number) =>
     op.modes[paramI] === 'immediate'
@@ -92,11 +118,11 @@ export function runIntCode(source: string | number[], input: number[] = []) {
         break
       case 3:
         // read a value from the input
-        set(op, 0, shift(input))
+        set(op, 0, yield new InputReq())
         break
       case 4:
         // output a value
-        output.push(get(op, 0))
+        yield new Output(get(op, 0))
         break
       case 5:
         // jump to a point in the code if the value of the first param is not equal to 0
@@ -126,6 +152,4 @@ export function runIntCode(source: string | number[], input: number[] = []) {
 
     i += op.paramCount + 1
   }
-
-  return output
 }
