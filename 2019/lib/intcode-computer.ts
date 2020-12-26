@@ -10,10 +10,11 @@ const paramCounts = new Map([
   [6, 2],
   [7, 3],
   [8, 3],
+  [9, 0],
   [99, 0],
 ])
 
-type ParamMode = 'immediate' | 'ref'
+type ParamMode = 'immediate' | 'ref' | 'rel'
 type ParamModes = Array<ParamMode>
 type Op = {
   code: number
@@ -41,7 +42,19 @@ function parseOp(n: number) {
   const paramModes: ParamModes = []
   for (let p = 0; p < paramCount; p++) {
     const mode = definedModes[definedModes.length - 1 - p] ?? 0
-    paramModes.push(mode === 1 ? 'immediate' : 'ref')
+    switch (mode) {
+      case 1:
+        paramModes.push('immediate')
+        break
+      case 2:
+        paramModes.push('rel')
+        break
+      case 0:
+        paramModes.push('ref')
+        break
+      default:
+        throw new Error(`invalid param mode [${mode}]`)
+    }
   }
 
   const op: Op = {
@@ -90,17 +103,29 @@ export function runIntCode(source: string | number[], input: number[] = []) {
 export function* intCodeGenerator(source: string | number[]) {
   const mem = typeof source === 'string' ? parseIntCode(source) : source.slice()
   let i = 0
+  let relativeBase = 0
 
-  const get = (op: Op, paramI: number) =>
-    op.modes[paramI] === 'immediate'
-      ? mem[i + 1 + paramI]
-      : mem[mem[i + 1 + paramI]]
+  const get = (op: Op, paramI: number) => {
+    switch (op.modes[paramI]) {
+      case 'immediate':
+        return mem[i + 1 + paramI]
+      case 'ref':
+        return mem[mem[i + 1 + paramI]]
+      case 'rel':
+        return mem[mem[relativeBase + i + 1 + paramI]]
+    }
+  }
 
   const set = (op: Op, paramI: number, value: number) => {
-    if (op.modes[paramI] === 'ref') {
-      mem[mem[i + 1 + paramI]] = value
-    } else {
-      throw new Error('unable to write using param in immediate mode')
+    switch (op.modes[paramI]) {
+      case 'immediate':
+        throw new Error('unable to write using param in immediate mode')
+      case 'ref':
+        mem[mem[i + 1 + paramI]] = value
+        break
+      case 'rel':
+        mem[mem[relativeBase + i + 1 + paramI]] = value
+        break
     }
   }
 
@@ -145,6 +170,10 @@ export function* intCodeGenerator(source: string | number[]) {
       case 8:
         // set the third param to 1 if the first param is equal to the second param, otherwise set it to 0
         set(op, 2, get(op, 0) === get(op, 1) ? 1 : 0)
+        break
+      case 9:
+        // adjust the relative base by the first param
+        relativeBase += get(op, 0)
         break
       case 99:
         break main
