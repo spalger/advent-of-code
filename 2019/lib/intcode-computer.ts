@@ -18,13 +18,14 @@ type ParamMode = 'immediate' | 'ref' | 'rel'
 type ParamModes = Array<ParamMode>
 type Op = {
   code: number
-  paramCount: number
+  paramCount: bigint
   modes: ParamModes
 }
+export type IntSource = Map<bigint, bigint>
 
-const opCache = new Map<number, Op>()
+const opCache = new Map<bigint, Op>()
 
-function parseOp(n: number) {
+function parseOp(n: bigint) {
   const cached = opCache.get(n)
   if (cached !== undefined) {
     return cached
@@ -59,7 +60,7 @@ function parseOp(n: number) {
 
   const op: Op = {
     code: opCode,
-    paramCount,
+    paramCount: BigInt(paramCount),
     modes: paramModes,
   }
 
@@ -69,18 +70,21 @@ function parseOp(n: number) {
 }
 
 export function parseIntCode(code: string) {
-  return code.split(',').map(toInt)
+  return new Map(code.split(',').map((n, i) => [BigInt(i), BigInt(n)]))
 }
 
 export class InputReq {}
 
 export class Output {
-  constructor(public readonly output: number) {}
+  constructor(public readonly output: bigint) {}
 }
 
-export function runIntCode(source: string | number[], input: number[] = []) {
+export function runBigIntCode(
+  source: string | IntSource,
+  input: bigint[] = [],
+) {
   const output = []
-  const gen = intCodeGenerator(source)
+  const gen = bigIntCodeGenerator(source)
   let nextInput
   while (true) {
     const result = nextInput === undefined ? gen.next() : gen.next(nextInput)
@@ -100,37 +104,47 @@ export function runIntCode(source: string | number[], input: number[] = []) {
   }
 }
 
-export function* intCodeGenerator(source: string | number[]) {
-  const mem = typeof source === 'string' ? parseIntCode(source) : source.slice()
-  let i = 0
-  let relativeBase = 0
+export function runIntCode(source: string | IntSource, input: number[]) {
+  return runBigIntCode(
+    source,
+    input.map((n) => BigInt(n)),
+  ).map((n) => Number(n))
+}
+
+export function* bigIntCodeGenerator(source: string | IntSource) {
+  const mem =
+    typeof source === 'string' ? parseIntCode(source) : new Map(source)
+  let i = 0n
+  let relativeBase = 0n
 
   const get = (op: Op, paramI: number) => {
     switch (op.modes[paramI]) {
       case 'immediate':
-        return mem[i + 1 + paramI]
+        return mem.get(i + 1n + BigInt(paramI)) ?? 0n
       case 'ref':
-        return mem[mem[i + 1 + paramI]]
+        return mem.get(mem.get(i + 1n + BigInt(paramI)) ?? 0n) ?? 0n
       case 'rel':
-        return mem[mem[relativeBase + i + 1 + paramI]]
+        return (
+          mem.get(mem.get(relativeBase + i + 1n + BigInt(paramI)) ?? 0n) ?? 0n
+        )
     }
   }
 
-  const set = (op: Op, paramI: number, value: number) => {
+  const set = (op: Op, paramI: number, value: bigint) => {
     switch (op.modes[paramI]) {
       case 'immediate':
         throw new Error('unable to write using param in immediate mode')
       case 'ref':
-        mem[mem[i + 1 + paramI]] = value
+        mem.set(mem.get(i + 1n + BigInt(paramI)) ?? 0n, value)
         break
       case 'rel':
-        mem[mem[relativeBase + i + 1 + paramI]] = value
+        mem.set(mem.get(relativeBase + i + 1n + BigInt(paramI)) ?? 0n, value)
         break
     }
   }
 
   main: while (true) {
-    const op = parseOp(mem[i])
+    const op = parseOp(mem.get(i) ?? 0n)
 
     switch (op.code) {
       case 1:
@@ -151,25 +165,25 @@ export function* intCodeGenerator(source: string | number[]) {
         break
       case 5:
         // jump to a point in the code if the value of the first param is not equal to 0
-        if (get(op, 0) !== 0) {
+        if (get(op, 0) !== 0n) {
           i = get(op, 1)
           continue main
         }
         break
       case 6:
         // jump to a point in the code if the value of the first param is 0
-        if (get(op, 0) === 0) {
+        if (get(op, 0) === 0n) {
           i = get(op, 1)
           continue main
         }
         break
       case 7:
         // set the third param to 1 if the first param is less than the second param, otherwise set it to 0
-        set(op, 2, get(op, 0) < get(op, 1) ? 1 : 0)
+        set(op, 2, get(op, 0) < get(op, 1) ? 1n : 0n)
         break
       case 8:
         // set the third param to 1 if the first param is equal to the second param, otherwise set it to 0
-        set(op, 2, get(op, 0) === get(op, 1) ? 1 : 0)
+        set(op, 2, get(op, 0) === get(op, 1) ? 1n : 0n)
         break
       case 9:
         // adjust the relative base by the first param
@@ -179,6 +193,6 @@ export function* intCodeGenerator(source: string | number[]) {
         break main
     }
 
-    i += op.paramCount + 1
+    i += op.paramCount + 1n
   }
 }
