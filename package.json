@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@types/dedent": "^0.7.0",
-    "dedent": "^0.7.0"
+    "dedent": "^0.7.0",
+    "johnson-trotter": "^0.1.1"
   }
 }

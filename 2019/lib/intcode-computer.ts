@@ -55,8 +55,12 @@ function parseOp(n: number) {
   return op
 }
 
-export function runIntCode(code: string, input: number[] = []) {
-  const mem = code.split(',').map(toInt)
+export function parseIntCode(code: string) {
+  return code.split(',').map(toInt)
+}
+
+export function runIntCode(source: string | number[], input: number[] = []) {
+  const mem = typeof source === 'string' ? parseIntCode(source) : source.slice()
   let i = 0
 
   const output = []
