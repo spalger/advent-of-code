@@ -31,3 +31,23 @@ export function test() {
 
   deepStrictEqual(runBigIntCode(`104,1125899906842624,99`), [1125899906842624n])
 }
+
+export function part1(input: string) {
+  const output = runBigIntCode(input, [1n])
+
+  if (output.length !== 1) {
+    throw new Error(`intcode did not produce one output [${output.join(',')}]`)
+  }
+
+  console.log('the BOOST code produced is', output[0])
+}
+
+export function part2(input: string) {
+  const output = runBigIntCode(input, [2n])
+
+  if (output.length !== 1) {
+    throw new Error(`intcode did not produce one output [${output.join(',')}]`)
+  }
+
+  console.log('the coordinates of the distress signal are', output[0])
+}
