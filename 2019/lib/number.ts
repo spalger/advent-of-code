@@ -20,3 +20,17 @@ export function gcf(a: number, b: number) {
     if (b === 0) return a
   }
 }
+
+/**
+ * Find the greatest common divisor of a and b
+ */
+export function gcd(a: number, b: number): number {
+  return b === 0 ? Math.abs(a) : gcd(b, a % b)
+}
+
+/**
+ * Find the least common multiple of a and b
+ */
+export function lcm(a: number, b: number) {
+  return Math.abs(a * b) / gcd(a, b)
+}
