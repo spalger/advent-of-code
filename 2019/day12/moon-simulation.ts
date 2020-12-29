@@ -2,9 +2,7 @@ import { strictEqual, deepStrictEqual } from 'assert'
 
 import { lines } from '../lib/string'
 import { toInt, lcm } from '../lib/number'
-// import { p3d, P3d } from '../lib/p3d'
-
-type ElementType<T> = T extends ReadonlyArray<infer U> ? ElementType<U> : T
+import { ElementType } from '../lib/ts'
 
 const dirs = ['x', 'y', 'z'] as const
 type Dir = ElementType<typeof dirs>
