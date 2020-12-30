@@ -1,6 +1,6 @@
 import { strictEqual, deepStrictEqual } from 'assert'
 
-import { lines } from '../lib/string'
+import { toLines } from '../lib/string'
 import { toInt, lcm } from '../lib/number'
 import { ElementType } from '../lib/ts'
 
@@ -9,7 +9,7 @@ type Dir = ElementType<typeof dirs>
 const COORD_RE = /^<\s*x=\s*(-?\d+),\s*y=\s*(-?\d+),\s*z=\s*(-?\d+)\s*>$/
 
 const parseMoons = (input: string) =>
-  lines(input).map((coord) => {
+  toLines(input).map((coord) => {
     const [, x, y, z] = coord.match(COORD_RE)!
     return new Moon(new P3d(toInt(x), toInt(y), toInt(z)))
   })

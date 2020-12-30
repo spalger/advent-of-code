@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
 import chalk from 'chalk'
-import dedent from 'dedent'
 
+import { dedent } from '../lib/string'
 import { toInt } from '../lib/number'
 
 function wrap(arr: number[], width: number) {

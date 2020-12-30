@@ -1,9 +1,7 @@
 import { strictEqual, deepStrictEqual } from 'assert'
 
-import dedent from 'dedent'
-
 import { p, Point } from '../lib/point'
-import { lines } from '../lib/string'
+import { toLines, dedent } from '../lib/string'
 import { shift } from '../lib/array'
 
 class AsteroidMap {
@@ -58,7 +56,7 @@ function parseMap(map: string) {
   let width = 0
   let height = 0
 
-  for (const [y, line] of lines(map).entries()) {
+  for (const [y, line] of toLines(map).entries()) {
     height = y + 1
     for (const [x, char] of line.split('').entries()) {
       width = x + 1

@@ -1,8 +1,6 @@
 import { strictEqual } from 'assert'
 
-import dedent from 'dedent'
-
-import { lines } from '../lib/string'
+import { toLines, dedent } from '../lib/string'
 
 type Planets = Map<string, Planet>
 class Planet {
@@ -46,7 +44,7 @@ function parseMap(map: string) {
     return planet
   }
 
-  for (const line of lines(map)) {
+  for (const line of toLines(map)) {
     const [parent, child] = line.split(')').map(getPlanet)
     child.parent = parent
   }
