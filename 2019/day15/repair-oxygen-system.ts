@@ -1,8 +1,5 @@
-import { deepStrictEqual } from 'assert'
-
 import { intCodeTick, State } from '../lib/intcode-computer'
 import { p, Point } from '../lib/point'
-import { toLines, dedent } from '../lib/string'
 import { shift } from '../lib/array'
 import { ElementType } from '../lib/ts'
 
