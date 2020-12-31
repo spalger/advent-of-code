@@ -83,25 +83,14 @@ export function runBigIntCode(
   source: string | IntSource,
   input: bigint[] = [],
 ) {
-  const output = []
-  const gen = bigIntCodeGenerator(source)
-  let nextInput
-  while (true) {
-    const result = nextInput === undefined ? gen.next() : gen.next(nextInput)
-    nextInput = undefined
+  const state = State.create(source, input)
 
-    if (result.value instanceof Output) {
-      output.push(result.value.output)
-    }
-
-    if (result.value instanceof InputReq) {
-      nextInput = shift(input)
-    }
-
-    if (result.done) {
-      return output
-    }
+  const { mode } = intCodeTick(state)
+  if (mode !== 'done') {
+    throw new Error('unable to run intCode to completion')
   }
+
+  return state.outputLog
 }
 
 export function runIntCode(source: string | IntSource, input: number[]) {
@@ -111,90 +100,200 @@ export function runIntCode(source: string | IntSource, input: number[]) {
   ).map((n) => Number(n))
 }
 
-export function* bigIntCodeGenerator(source: string | IntSource) {
-  const mem =
-    typeof source === 'string' ? parseIntCode(source) : new Map(source)
-  let i = 0n
-  let relativeBase = 0n
+class State {
+  static create(source: string | IntSource, input?: bigint[]) {
+    return new State(
+      typeof source === 'string' ? parseIntCode(source) : new Map(source),
+      input,
+    )
+  }
 
-  const get = (op: Op, paramI: bigint) => {
-    switch (op.modes.get(paramI)) {
+  private constructor(
+    private readonly mem: IntSource,
+    public readonly input: bigint[] = [],
+    private i: bigint = 0n,
+    public relativeBase: bigint = 0n,
+    public readonly outputLog: bigint[] = [],
+  ) {}
+
+  private _op: Op | undefined
+  op() {
+    if (this._op) {
+      return this._op
+    }
+
+    return (this._op = parseOp(this.get(this.i)))
+  }
+
+  get(i: bigint) {
+    return this.mem.get(i) ?? 0n
+  }
+
+  getP(paramI: bigint) {
+    switch (this.op().modes.get(paramI)) {
       case 'immediate':
-        return mem.get(i + 1n + paramI) ?? 0n
+        return this.mem.get(this.i + 1n + paramI) ?? 0n
       case 'ref':
-        return mem.get(mem.get(i + 1n + paramI) ?? 0n) ?? 0n
+        return this.mem.get(this.mem.get(this.i + 1n + paramI) ?? 0n) ?? 0n
       case 'rel':
-        return mem.get(relativeBase + (mem.get(i + 1n + paramI) ?? 0n)) ?? 0n
+        return (
+          this.mem.get(
+            this.relativeBase + (this.mem.get(this.i + 1n + paramI) ?? 0n),
+          ) ?? 0n
+        )
       default:
         throw new Error(`unknown param mode`)
     }
   }
 
-  const set = (op: Op, paramI: bigint, value: bigint) => {
-    switch (op.modes.get(paramI)) {
+  setP(paramI: bigint, value: bigint) {
+    switch (this.op().modes.get(paramI)) {
       case 'immediate':
         throw new Error('unable to write using param in immediate mode')
       case 'ref':
-        mem.set(mem.get(i + 1n + paramI) ?? 0n, value)
+        this.mem.set(this.mem.get(this.i + 1n + paramI) ?? 0n, value)
         break
       case 'rel':
-        mem.set(relativeBase + (mem.get(i + 1n + paramI) ?? 0n), value)
+        this.mem.set(
+          this.relativeBase + (this.mem.get(this.i + 1n + paramI) ?? 0n),
+          value,
+        )
         break
       default:
         throw new Error('unknown param mode')
     }
   }
 
-  main: while (true) {
-    const op = parseOp(mem.get(i) ?? 0n)
+  incrOp() {
+    this.setI(this.i + this.op().paramCount + 1n)
+  }
 
-    switch (op.code) {
-      case 1:
-        // add the first two param values and store it in the memory slot defined by the third param
-        set(op, 2n, get(op, 0n) + get(op, 1n))
-        break
-      case 2:
-        // multiply the first two params and store the result in the third param
-        set(op, 2n, get(op, 0n) * get(op, 1n))
-        break
-      case 3:
-        // read a value from the input
-        set(op, 0n, yield new InputReq())
-        break
-      case 4:
-        // output a value
-        yield new Output(get(op, 0n))
-        break
-      case 5:
-        // jump to a point in the code if the value of the first param is not equal to 0
-        if (get(op, 0n) !== 0n) {
-          i = get(op, 1n)
-          continue main
-        }
-        break
-      case 6:
-        // jump to a point in the code if the value of the first param is 0
-        if (get(op, 0n) === 0n) {
-          i = get(op, 1n)
-          continue main
-        }
-        break
-      case 7:
-        // set the third param to 1 if the first param is less than the second param, otherwise set it to 0
-        set(op, 2n, get(op, 0n) < get(op, 1n) ? 1n : 0n)
-        break
-      case 8:
-        // set the third param to 1 if the first param is equal to the second param, otherwise set it to 0
-        set(op, 2n, get(op, 0n) === get(op, 1n) ? 1n : 0n)
-        break
-      case 9:
-        // adjust the relative base by the first param
-        relativeBase += get(op, 0n)
-        break
-      case 99:
-        break main
+  setI(i: bigint) {
+    if (i !== this.i) {
+      this.i = i
+      this._op = undefined
+    }
+  }
+
+  clone() {
+    return new State(
+      new Map(this.mem),
+      this.input.slice(),
+      this.i,
+      this.relativeBase,
+      this.outputLog.slice(),
+    )
+  }
+}
+
+export function* bigIntCodeGenerator(source: string | IntSource) {
+  const state = State.create(source)
+
+  while (true) {
+    const { mode } = intCodeTick(state, { pauseOnOutput: true })
+
+    if (mode === 'input') {
+      state.input.push(yield new InputReq())
     }
 
-    i += op.paramCount + 1n
+    if (mode === 'output') {
+      yield new Output(shift(state.outputLog))
+    }
+
+    if (mode === 'done') {
+      return
+    }
+  }
+}
+
+export function intCodeTick(
+  state: State,
+  options: { pauseOnOutput?: boolean } = {},
+): { mode: 'done' | 'input' | 'output'; state: State } {
+  while (true) {
+    const { code } = state.op()
+
+    if (code === 1) {
+      // add the first two param values and store it in the memory slot defined by the third param
+      state.setP(2n, state.getP(0n) + state.getP(1n))
+      state.incrOp()
+      continue
+    }
+
+    if (code === 2) {
+      // multiply the first two params and store the result in the third param
+      state.setP(2n, state.getP(0n) * state.getP(1n))
+      state.incrOp()
+      continue
+    }
+
+    if (code === 3) {
+      if (!state.input.length) {
+        // request input before continuing
+        return { mode: 'input', state }
+      }
+
+      // read a value from the input and write it to the location referenced by the first param
+      state.setP(0n, shift(state.input))
+      state.incrOp()
+      continue
+    }
+
+    if (code === 4) {
+      state.outputLog.push(state.getP(0n))
+      state.incrOp()
+      if (options.pauseOnOutput) {
+        return { mode: 'output', state }
+      } else {
+        continue
+      }
+    }
+
+    if (code === 5) {
+      // jump to a point in the code if the value of the first param is not equal to 0
+      if (state.getP(0n) !== 0n) {
+        state.setI(state.getP(1n))
+      } else {
+        state.incrOp()
+      }
+
+      continue
+    }
+
+    if (code === 6) {
+      // jump to a point in the code if the value of the first param is 0
+      if (state.getP(0n) === 0n) {
+        state.setI(state.getP(1n))
+      } else {
+        state.incrOp()
+      }
+
+      continue
+    }
+
+    if (code === 7) {
+      // set the third param to 1 if the first param is less than the second param, otherwise set it to 0
+      state.setP(2n, state.getP(0n) < state.getP(1n) ? 1n : 0n)
+      state.incrOp()
+      continue
+    }
+
+    if (code === 8) {
+      // set the third param to 1 if the first param is equal to the second param, otherwise set it to 0
+      state.setP(2n, state.getP(0n) === state.getP(1n) ? 1n : 0n)
+      state.incrOp()
+      continue
+    }
+
+    if (code === 9) {
+      // adjust the relative base by the first param
+      state.relativeBase += state.getP(0n)
+      state.incrOp()
+      continue
+    }
+
+    if (code === 99) {
+      return { mode: 'done', state }
+    }
   }
 }
