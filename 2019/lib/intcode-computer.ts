@@ -100,7 +100,7 @@ export function runIntCode(source: string | IntSource, input: number[]) {
   ).map((n) => Number(n))
 }
 
-class State {
+export class State {
   static create(source: string | IntSource, input?: bigint[]) {
     return new State(
       typeof source === 'string' ? parseIntCode(source) : new Map(source),
