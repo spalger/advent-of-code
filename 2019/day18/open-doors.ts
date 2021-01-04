@@ -290,65 +290,73 @@ function trimDeadEnds(maze: Maze) {
   }
 }
 
+type Path = { nodes: Node[]; distance: number }
+function getShortestPath(
+  from: Node,
+  to: Node,
+  unlockedDoorNames: string[],
+): Path | null {
+  let shortestPath = null
+
+  const queue = [{ nodes: [from], distance: 0 }]
+
+  while (queue.length) {
+    const { nodes, distance } = shift(queue)
+
+    if (shortestPath && distance > shortestPath.distance) {
+      // ignore this path, we've already found a shorter one
+      continue
+    }
+
+    const current = nodes[nodes.length - 1]
+    for (const [next, stepSize] of current.edges) {
+      if (nodes.includes(next)) {
+        continue
+      }
+
+      if (next === to) {
+        const path = {
+          nodes: [...nodes, next],
+          distance: distance + stepSize,
+        }
+
+        if (!shortestPath || shortestPath.distance > path.distance) {
+          shortestPath = path
+        }
+      }
+
+      if (
+        next.ent instanceof Key &&
+        !unlockedDoorNames.includes(next.ent.door)
+      ) {
+        continue
+      }
+
+      if (
+        next.ent instanceof Door &&
+        !unlockedDoorNames.includes(next.ent.name)
+      ) {
+        continue
+      }
+
+      queue.unshift({
+        nodes: [...nodes, next],
+        distance: distance + stepSize,
+      })
+    }
+  }
+
+  return shortestPath
+}
+
 export function findShortestPathThroughMaze(input: string) {
   const maze = Maze.fromInput(input)
-  maze.map.delete(p(39, 40))
-  maze.map.delete(p(41, 40))
 
   // help us reduce the amount of work we do by filling in all empty dead ends
   trimDeadEnds(maze)
 
   console.log(maze.toString())
   const graph = maze.toGraph()
-
-  type Path = { nodes: Node[]; distance: number }
-  function getPath(
-    from: Node,
-    to: Node,
-    unlockedDoorNames: string[],
-  ): Path | null {
-    const queue = [{ nodes: [from], to, distance: 0 }]
-
-    while (queue.length) {
-      const { nodes, to, distance } = shift(queue)
-
-      const current = nodes[nodes.length - 1]
-      for (const [next, stepSize] of current.edges) {
-        if (nodes.includes(next)) {
-          continue
-        }
-
-        if (next === to) {
-          return {
-            nodes: [...nodes, next],
-            distance: distance + stepSize,
-          }
-        }
-
-        if (
-          next.ent instanceof Key &&
-          !unlockedDoorNames.includes(next.ent.door)
-        ) {
-          continue
-        }
-
-        if (
-          next.ent instanceof Door &&
-          !unlockedDoorNames.includes(next.ent.name)
-        ) {
-          continue
-        }
-
-        queue.unshift({
-          nodes: [...nodes, next],
-          to,
-          distance: distance + stepSize,
-        })
-      }
-    }
-
-    return null
-  }
 
   // index some useful info from the graph
   const allKeys: Key[] = []
@@ -403,7 +411,7 @@ export function findShortestPathThroughMaze(input: string) {
       }
 
       const nextNode = keyNodes.get(nextKey)!
-      const path = getPath(task.node, nextNode, task.unlockedDoorNames)
+      const path = getShortestPath(task.node, nextNode, task.unlockedDoorNames)
       if (!path) {
         // can't reach key
         continue
