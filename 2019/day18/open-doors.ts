@@ -343,15 +343,9 @@ function getShortestPath(
   return shortestPath
 }
 
-export function findShortestPathThroughMaze(input: string) {
-  const graph = Graph.fromMaze(Maze.fromInput(input))
+export function findShortestPathThroughMaze(graph: string | Graph) {
+  graph = graph instanceof Graph ? graph : Graph.fromMaze(Maze.fromInput(graph))
   console.log(graph.toString())
-
-  if (graph.roots.size !== 1) {
-    throw new Error(
-      'findShortestPathThroughMaze() only supports mazes with a single starting point',
-    )
-  }
 
   // index some useful info from the graph
   const allKeys: Key[] = []
@@ -371,11 +365,17 @@ export function findShortestPathThroughMaze(input: string) {
   let shortestDistance
 
   const partialDistanceCache = new Map<string, number>()
-  const queue = [
+  type Task = {
+    keyNames: string[]
+    unlockedDoorNames: string[]
+    nodes: Node[]
+    distance: number
+  }
+  const queue: Task[] = [
     {
-      keyNames: [] as string[],
-      unlockedDoorNames: [] as string[],
-      node: [...graph.roots][0],
+      keyNames: [],
+      unlockedDoorNames: [],
+      nodes: [...graph.roots],
       distance: 0,
     },
   ]
@@ -383,8 +383,9 @@ export function findShortestPathThroughMaze(input: string) {
   while (queue.length) {
     const task = shift(queue)
 
-    const [cur, ...otherKeys] = task.keyNames
-    const cacheKey = `${cur}|${otherKeys.sort().join(',')}`
+    const current = task.nodes.map((n) => n.ent?.name).join(',')
+    const collected = task.keyNames.slice().sort().join(',')
+    const cacheKey = `${current}|${collected}`
 
     const fastestToHere = partialDistanceCache.get(cacheKey)
     if (!fastestToHere || fastestToHere > task.distance) {
@@ -399,37 +400,39 @@ export function findShortestPathThroughMaze(input: string) {
       continue
     }
 
-    for (const nextKey of allKeys) {
-      if (task.keyNames.includes(nextKey.name)) {
-        // already picked up this key
-        continue
-      }
-
-      const nextNode = keyNodes.get(nextKey)!
-      const path = getShortestPath(task.node, nextNode, task.unlockedDoorNames)
-      if (!path) {
-        // can't reach key
-        continue
-      }
-
-      const keyNames = [nextKey.name, ...task.keyNames]
-      const unlockedDoorNames = [nextKey.door, ...task.unlockedDoorNames]
-      const distance = task.distance + path.distance
-
-      if (keyNames.length === allKeys.length) {
-        if (!shortestDistance || shortestDistance > distance) {
-          shortestDistance = distance
+    for (const node of task.nodes) {
+      for (const nextKey of allKeys) {
+        if (task.keyNames.includes(nextKey.name)) {
+          // already picked up this key
+          continue
         }
 
-        continue
-      }
+        const nextNode = keyNodes.get(nextKey)!
+        const path = getShortestPath(node, nextNode, task.unlockedDoorNames)
+        if (!path) {
+          // can't reach key
+          continue
+        }
 
-      queue.push({
-        keyNames,
-        unlockedDoorNames,
-        distance,
-        node: nextNode,
-      })
+        const keyNames = [nextKey.name, ...task.keyNames]
+        const unlockedDoorNames = [nextKey.door, ...task.unlockedDoorNames]
+        const distance = task.distance + path.distance
+
+        if (keyNames.length === allKeys.length) {
+          if (!shortestDistance || shortestDistance > distance) {
+            shortestDistance = distance
+          }
+
+          continue
+        }
+
+        queue.push({
+          keyNames,
+          unlockedDoorNames,
+          distance,
+          nodes: task.nodes.map((n) => (n === node ? nextNode : n)),
+        })
+      }
     }
   }
 
@@ -489,5 +492,27 @@ export function part1(input: string) {
   console.log(
     'the shortest path through the maze is',
     findShortestPathThroughMaze(input),
+  )
+}
+
+export function part2(input: string) {
+  const maze = Maze.fromInput(input)
+
+  for (let y = 39; y <= 41; y++) {
+    for (let x = 39; x <= 41; x++) {
+      if ((x === 39 || x === 41) && (y === 39 || y === 41)) {
+        maze.starts.add(p(x, y))
+      } else {
+        maze.map.delete(p(x, y))
+        maze.starts.delete(p(x, y))
+      }
+    }
+  }
+
+  const graph = Graph.fromMaze(maze)
+
+  console.log(
+    'the shortest path for all four robots is',
+    findShortestPathThroughMaze(graph),
   )
 }
