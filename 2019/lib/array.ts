@@ -39,3 +39,7 @@ export function pop<T>(arr: T[]): T {
 
   return arr.pop() as T
 }
+
+export function last<T>(arr: T[]): T | undefined {
+  return arr[arr.length - 1]
+}
