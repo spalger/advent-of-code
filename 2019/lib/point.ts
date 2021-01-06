@@ -39,6 +39,10 @@ export class Point {
     return p(this.x + offset.x, this.y + offset.y)
   }
 
+  sub(offset: Point) {
+    return p(this.x - offset.x, this.y - offset.y)
+  }
+
   /**
    * get the manhattan distance this and another point
    */

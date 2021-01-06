@@ -1,293 +1,60 @@
 import { deepStrictEqual } from 'assert'
 
-import chalk from 'chalk'
-
 import { p, Point } from '../lib/point'
-import { toLines, dedent } from '../lib/string'
-import { repeat, shift } from '../lib/array'
+import { dedent } from '../lib/string'
+import { shift } from '../lib/array'
+import { MazeGraph, Node } from '../lib/maze_graph'
+import { PointMap } from '../lib/point_map'
 
 class Key {
   constructor(public readonly name: string, public readonly door: string) {}
+
+  toString() {
+    return this.name
+  }
 }
 
 class Door {
   constructor(public readonly name: string) {}
-}
-
-type Ent = '.' | Key | Door
-
-type Node = {
-  readonly loc: Point
-  readonly ent: Key | Door | null
-  readonly edges: Map<Node, number>
-}
-
-class Maze {
-  static fromInput(input: string) {
-    const map: Maze['map'] = new Map()
-    const starts = new Set<Point>()
-
-    const lines = toLines(input)
-    for (const [li, line] of lines.entries()) {
-      const y = lines.length - li - 1
-      for (const [x, char] of line.split('').entries()) {
-        const point = p(x, y)
-        if (char === '#') {
-          // ignore walls
-        } else if (char === '@') {
-          map.set(point, '.')
-          starts.add(point)
-        } else if (char === '.') {
-          map.set(point, '.')
-        } else if (char === char.toLowerCase()) {
-          map.set(point, new Key(char, char.toUpperCase()))
-        } else {
-          map.set(point, new Door(char))
-        }
-      }
-    }
-
-    if (!starts.size) {
-      throw new Error('never found a start')
-    }
-
-    let minX = Infinity
-    let maxX = 0
-    let minY = Infinity
-    let maxY = 0
-    for (const point of map.keys()) {
-      minX = Math.min(point.x, minX)
-      maxX = Math.max(point.x, maxX)
-      minY = Math.min(point.y, minY)
-      maxY = Math.max(point.y, maxY)
-    }
-
-    return new Maze(map, starts, minX, maxX, minY, maxY)
-  }
-
-  constructor(
-    public readonly map: Map<Point, Ent>,
-    public readonly starts: Set<Point>,
-    public readonly minX: number,
-    public readonly maxX: number,
-    public readonly minY: number,
-    public readonly maxY: number,
-  ) {}
-
-  neighbors(p: Point, exclude?: Set<Point>) {
-    const neighbors: [Point, Exclude<Ent, '#'>][] = []
-
-    if (p.y < this.maxY) {
-      const top = p.top()
-      if (!exclude || !exclude.has(top)) {
-        const ent = this.map.get(top)
-        if (ent) {
-          neighbors.push([top, ent])
-        }
-      }
-    }
-
-    if (p.x < this.maxX) {
-      const right = p.right()
-      if (!exclude || !exclude.has(right)) {
-        const ent = this.map.get(right)
-        if (ent) {
-          neighbors.push([right, ent])
-        }
-      }
-    }
-
-    if (p.y > this.minY) {
-      const bottom = p.bottom()
-      if (!exclude || !exclude.has(bottom)) {
-        const ent = this.map.get(bottom)
-        if (ent) {
-          neighbors.push([bottom, ent])
-        }
-      }
-    }
-
-    if (p.x > this.minX) {
-      const left = p.left()
-      if (!exclude || !exclude.has(left)) {
-        const ent = this.map.get(left)
-        if (ent) {
-          neighbors.push([left, ent])
-        }
-      }
-    }
-
-    return neighbors
-  }
-}
-
-class Graph {
-  static fromMaze(maze: Maze) {
-    const nodesByLoc = new Map(
-      Array.from(maze.map).map(([loc, ent]) => [
-        loc,
-        {
-          loc,
-          ent: ent === '.' ? null : ent,
-          edges: new Map<Node, number>(),
-        },
-      ]),
-    )
-
-    const nodes = new Set(nodesByLoc.values())
-
-    // populate edges
-    for (const a of nodes) {
-      for (const [neighbor] of maze.neighbors(a.loc)) {
-        const b = nodesByLoc.get(neighbor)
-        if (!b) {
-          throw new Error(`missing node for ${b}`)
-        }
-
-        a.edges.set(b, 1)
-      }
-    }
-
-    // find nodes which lead nowhere and prune them from the graph
-    const deadEnds = new Set<Node>()
-    const isDeadEnd = (node: Node) =>
-      !maze.starts.has(node.loc) && node.ent === null && node.edges.size === 1
-    for (const node of nodes) {
-      if (isDeadEnd(node)) {
-        deadEnds.add(node)
-      }
-    }
-    for (const node of deadEnds) {
-      const [[neighbor]] = node.edges
-      neighbor.edges.delete(node)
-      nodes.delete(node)
-      nodesByLoc.delete(node.loc)
-
-      if (isDeadEnd(neighbor)) {
-        deadEnds.add(neighbor)
-      }
-    }
-
-    // find nodes without anything in them and two edges, remove them from the
-    // graph and update the distance on their neighbors
-    for (const node of nodes) {
-      if (
-        !maze.starts.has(node.loc) &&
-        node.ent === null &&
-        node.edges.size === 2
-      ) {
-        const [[a, aDistance], [b, bDistance]] = node.edges
-
-        const newDistance = aDistance + bDistance
-        a.edges.delete(node)
-        a.edges.set(b, newDistance)
-
-        b.edges.delete(node)
-        b.edges.set(a, newDistance)
-
-        nodes.delete(node)
-        nodesByLoc.delete(node.loc)
-      }
-    }
-
-    const roots = new Set(
-      Array.from(maze.starts)
-        .map((p) => nodesByLoc.get(p))
-        .filter((n): n is Node => !!n),
-    )
-
-    if (!roots.size) {
-      throw new Error('reducing the graph got rid of the root somehow')
-    }
-
-    return new Graph(maze, roots, nodes)
-  }
-
-  constructor(
-    public readonly maze: Maze,
-    public readonly roots: Set<Node>,
-    public readonly nodes: Set<Node>,
-  ) {}
 
   toString() {
-    const map = new Map<Point, string>()
-
-    for (const node of this.nodes) {
-      if (node.ent) {
-        map.set(node.loc, chalk.green(node.ent?.name))
-      } else if (this.roots.has(node)) {
-        map.set(node.loc, chalk.white('@'))
-      } else {
-        map.set(node.loc, chalk.bold.cyan('+'))
-      }
-
-      highlightEdges: for (const edge of node.edges.keys()) {
-        const paths = [[node.loc]]
-        while (paths.length) {
-          const path = shift(paths)
-
-          for (const [neighbor] of this.maze.neighbors(path[path.length - 1])) {
-            if (path.includes(neighbor)) {
-              continue
-            }
-
-            if (neighbor === edge.loc) {
-              for (const p of path.slice(1)) {
-                map.set(
-                  p,
-                  map.get(p) && map.get(p) !== chalk.grey('.')
-                    ? chalk.red('!')
-                    : chalk.grey('.'),
-                )
-              }
-              continue highlightEdges
-            }
-
-            paths.unshift([...path, neighbor])
-          }
-        }
-      }
-    }
-
-    const lines = []
-    for (let y = this.maze.maxY + 1; y >= this.maze.minY - 1; y--) {
-      let line = ''
-
-      if (y < 10) {
-        line += ` ${y} `
-      } else {
-        line += `${y} `
-      }
-
-      for (let x = this.maze.minX - 1; x <= this.maze.maxX + 1; x++) {
-        const point = p(x, y)
-        if (map.has(point)) {
-          line += map.get(point)!
-        } else {
-          line += '#'
-        }
-      }
-      lines.push(line)
-    }
-
-    const xs = repeat(
-      this.maze.maxX - this.maze.minX + 3,
-      (i) => this.maze.minX - 1 + i,
-    )
-
-    lines.push(
-      '   ' + xs.map((i) => (i < 10 ? i : Math.floor(i / 10))).join(''),
-      '   ' + xs.map((i) => (i < 10 ? ' ' : i % 10)).join(''),
-    )
-
-    return lines.join('\n')
+    return this.name
   }
 }
 
-type Path = { nodes: Node[]; distance: number }
+type Ent = Key | Door
+
+function parseMap(input: string) {
+  const starts = new Set<Point>()
+  return {
+    starts,
+    map: PointMap.fromString(input).map((ent, point) => {
+      if (ent === '#') {
+        return '#'
+      }
+
+      if (ent === '@') {
+        starts.add(point)
+        return '.'
+      }
+
+      if (ent === '.') {
+        return '.'
+      }
+
+      if (ent === ent.toLowerCase()) {
+        return new Key(ent, ent.toUpperCase())
+      }
+
+      return new Door(ent)
+    }),
+  }
+}
+
+type Path = { nodes: Node<Ent>[]; distance: number }
 function getShortestPath(
-  from: Node,
-  to: Node,
+  from: Node<Ent>,
+  to: Node<Ent>,
   unlockedDoorNames: string[],
 ): Path | null {
   let shortestPath = null
@@ -343,15 +110,17 @@ function getShortestPath(
   return shortestPath
 }
 
-export function findShortestPathThroughMaze(graph: string | Graph) {
-  graph = graph instanceof Graph ? graph : Graph.fromMaze(Maze.fromInput(graph))
+export function findShortestPathThroughMaze(graph: string | MazeGraph<Ent>) {
+  graph =
+    graph instanceof MazeGraph ? graph : MazeGraph.fromPointMap(parseMap(graph))
+
   console.log(graph.toString())
 
   // index some useful info from the graph
   const allKeys: Key[] = []
-  const keyNodes = new Map<Key, Node>()
-  const keyNodesByName = new Map<string, Node>()
-  const doorNodesByName = new Map<string, Node>()
+  const keyNodes = new Map<Key, Node<Ent>>()
+  const keyNodesByName = new Map<string, Node<Ent>>()
+  const doorNodesByName = new Map<string, Node<Ent>>()
   for (const node of graph.nodes) {
     if (node.ent instanceof Key) {
       keyNodes.set(node.ent, node)
@@ -368,14 +137,14 @@ export function findShortestPathThroughMaze(graph: string | Graph) {
   type Task = {
     keyNames: string[]
     unlockedDoorNames: string[]
-    nodes: Node[]
+    nodes: Node<Ent>[]
     distance: number
   }
   const queue: Task[] = [
     {
       keyNames: [],
       unlockedDoorNames: [],
-      nodes: [...graph.roots],
+      nodes: [...graph.starts],
       distance: 0,
     },
   ]
@@ -489,27 +258,32 @@ export function test() {
 }
 
 export function part1(input: string) {
+  const graph = MazeGraph.fromPointMap(parseMap(input))
+
   console.log(
     'the shortest path through the maze is',
-    findShortestPathThroughMaze(input),
+    findShortestPathThroughMaze(graph),
   )
 }
 
 export function part2(input: string) {
-  const maze = Maze.fromInput(input)
+  const { starts, map } = parseMap(input)
 
   for (let y = 39; y <= 41; y++) {
     for (let x = 39; x <= 41; x++) {
       if ((x === 39 || x === 41) && (y === 39 || y === 41)) {
-        maze.starts.add(p(x, y))
+        starts.add(p(x, y))
       } else {
-        maze.map.delete(p(x, y))
-        maze.starts.delete(p(x, y))
+        map.points.set(p(x, y), '#')
+        starts.delete(p(x, y))
       }
     }
   }
 
-  const graph = Graph.fromMaze(maze)
+  const graph = MazeGraph.fromPointMap({
+    starts,
+    map,
+  })
 
   console.log(
     'the shortest path for all four robots is',

@@ -23,6 +23,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "johnson-trotter": "^0.1.1"
+    "johnson-trotter": "^0.1.1",
+    "strip-ansi": "^6.0.0"
   }
 }
