@@ -63,7 +63,7 @@ export class MazeGraph<Ent> {
     // find nodes which lead nowhere and prune them from the graph
     const deadEnds = new Set<Node<Ent>>()
     const isDeadEnd = (node: Node<Ent>) =>
-      !starts.has(node.loc) && node.ent === null && node.edges.size === 1
+      !starts.has(node.loc) && node.ent === null && node.edges.size <= 1
 
     for (const node of nodes) {
       if (isDeadEnd(node)) {
@@ -72,13 +72,16 @@ export class MazeGraph<Ent> {
     }
 
     for (const node of deadEnds) {
-      const [[neighbor]] = node.edges
-      neighbor.edges.delete(node)
       nodes.delete(node)
       nodesByLoc.delete(node.loc)
 
-      if (isDeadEnd(neighbor)) {
-        deadEnds.add(neighbor)
+      if (node.edges.size) {
+        const [[neighbor]] = node.edges
+        neighbor.edges.delete(node)
+
+        if (isDeadEnd(neighbor)) {
+          deadEnds.add(neighbor)
+        }
       }
     }
 
