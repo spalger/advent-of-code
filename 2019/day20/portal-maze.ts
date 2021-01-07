@@ -1,7 +1,14 @@
+import { strictEqual } from 'assert'
+import * as Fs from 'fs'
+import * as Path from 'path'
+
 import { PointMap } from '../lib/point_map'
 import { MazeGraph, Node } from '../lib/maze_graph'
 import { Point } from '../lib/point'
-import { shift, last } from '../lib/array'
+import { shift } from '../lib/array'
+import { memoize } from '../lib/fn'
+
+const read = (p: string) => Fs.readFileSync(Path.resolve(__dirname, p), 'utf-8')
 
 const portalCache = new Map<string, Portal>()
 class Portal {
@@ -65,86 +72,14 @@ function parseMaze(input: string) {
     map.points.set(point, portal)
   }
 
-  return MazeGraph.fromPointMap({
+  const graph = MazeGraph.fromPointMap({
     map,
     baseMap,
   })
-}
 
-export function test() {
-  console.log(
-    parseMaze(`
-               A
-               A
-        #######.#########
-        #######.........#
-        #######.#######.#
-        #######.#######.#
-        #######.#######.#
-        #####  B    ###.#
-      BC...##  C    ###.#
-        ##.##       ###.#
-        ##...DE  F  ###.#
-        #####    G  ###.#
-        #########.#####.#
-      DE..#######...###.#
-        #.###..####.###.#
-      FG..#########.....#
-        ###########.#####
-                   Z
-                   Z
-    `).toString(),
-  )
-
-  console.log(
-    parseMaze(`
-                         A
-                         A
-        #################.#############
-        #.#...#...................#.#.#
-        #.#.#.###.###.###.#########.#.#
-        #.#.#.......#...#.....#.#.#...#
-        #.#########.###.#####.#.#.###.#
-        #.............#.#.....#.......#
-        ###.###########.###.#####.#.#.#
-        #.....#        A   C    #.#.#.#
-        #######        S   P    #####.#
-        #.#...#                 #......VT
-        #.#.#.#                 #.#####
-        #...#.#               YN....#.#
-        #.###.#                 #####.#
-      DI....#.#                 #.....#
-        #####.#                 #.###.#
-      ZZ......#               QG....#..AS
-        ###.###                 #######
-      JO..#.#.#                 #.....#
-        #.#.#.#                 ###.#.#
-        #...#..DI             BU....#..LF
-        #####.#                 #.#####
-      YN......#               VT..#....QG
-        #.###.#                 #.###.#
-        #.#...#                 #.....#
-        ###.###    J L     J    #.#.###
-        #.....#    O F     P    #.#...#
-        #.###.#####.#.#####.#####.###.#
-        #...#.#.#...#.....#.....#.#...#
-        #.#####.###.###.#.#.#########.#
-        #...#.#.....#...#.#.#.#.....#.#
-        #.###.#####.###.###.#.#.#######
-        #.#.........#...#.............#
-        #########.###.###.#############
-                 B   J   C
-                 U   P   P
-    `).toString(),
-  )
-}
-
-export function part1(input: string) {
-  const graph = parseMaze(input)
   let start
   let end
   const portalNodes = new Map<Portal, Node<Portal>[]>()
-
   for (const node of graph.nodes) {
     if (node.ent) {
       if (node.ent.label === 'AA') {
@@ -161,7 +96,7 @@ export function part1(input: string) {
     throw new Error('missing start or end')
   }
 
-  const getOtherEndOfPortal = (node: Node<Portal>) => {
+  const getOtherEndOfPortal = memoize((node: Node<Portal>) => {
     if (!node.ent) {
       throw new Error('not a portal node')
     }
@@ -172,47 +107,135 @@ export function part1(input: string) {
     }
 
     return other
+  })
+
+  const isOnOuterRing = memoize((node: Node<Portal>) => {
+    return (
+      node.loc.x === map.minX ||
+      node.loc.x === map.maxX ||
+      node.loc.y === map.minY ||
+      node.loc.y === map.maxY
+    )
+  })
+
+  return {
+    graph,
+    start,
+    end,
+    isOnOuterRing,
+    getOtherEndOfPortal,
+  }
+}
+
+function findShortestPathThroughMaze(input: string, recursive = false) {
+  const { start, end, getOtherEndOfPortal, isOnOuterRing } = parseMaze(input)
+
+  type Task = {
+    loc: Node<Portal>
+    level: number
+    visited: string[]
+    distance: number
   }
 
-  type Task = { path: Node<Portal>[]; distance: number }
+  let shortest: undefined | number
 
-  const distanceCache = new Map()
-  const queue: Task[] = [{ path: [start], distance: 0 }]
+  const distanceCache = new Map<string, number>()
+  const queue: Task[] = [
+    {
+      loc: start,
+      level: 0,
+      visited: [`outer AA, level 0`],
+      distance: 0,
+    },
+  ]
 
   while (queue.length) {
-    const task = shift(queue)
-    const pos = last(task.path)
+    const { visited, level, loc, distance } = shift(queue)
 
-    for (const [node, distance] of pos.edges) {
-      if (task.path.includes(node)) {
+    if (shortest && shortest < distance) {
+      continue
+    }
+
+    for (const [neighbor, stepLength] of loc.edges) {
+      // we can't go back through the start
+      if (neighbor === start) {
         continue
       }
 
-      let next: Task
-      if (node !== end && node.ent) {
-        next = {
-          path: [...task.path, node, getOtherEndOfPortal(node)],
-          distance: task.distance + distance + 1,
+      const neighborDistance = distance + stepLength
+
+      // did we really reach the end?
+      if (neighbor === end) {
+        if (level === 0 && (!shortest || shortest > neighborDistance)) {
+          shortest = neighborDistance
         }
+        continue
+      }
+
+      const nextKey = `${neighbor.loc.x},${neighbor.loc.y},${level}`
+
+      // have we already been here?
+      if (visited.includes(nextKey)) {
+        continue
+      }
+
+      // have we gotten here faster somehow?
+      const shortestToHere = distanceCache.get(nextKey)
+      if (shortestToHere && shortestToHere < neighborDistance) {
+        continue
+      }
+      distanceCache.set(nextKey, neighborDistance)
+
+      if (neighbor.ent) {
+        // handle stepping into a portal
+        const nextLevel = recursive
+          ? isOnOuterRing(neighbor)
+            ? level - 1
+            : level + 1
+          : level
+
+        if (level < 0) {
+          // there aren't any negative levels
+          continue
+        }
+
+        queue.push({
+          loc: getOtherEndOfPortal(neighbor),
+          level: nextLevel,
+          visited: [...visited, nextKey],
+          distance: neighborDistance + 1,
+        })
       } else {
-        next = {
-          path: [...task.path, node],
-          distance: task.distance + distance,
-        }
-      }
-
-      const nextPos = last(next.path)
-      if (distanceCache.get(nextPos) < next.distance) {
-        continue
-      }
-
-      distanceCache.set(nextPos, next.distance)
-
-      if (nextPos !== end) {
-        queue.push(next)
+        // handle stepping to a normal space
+        queue.push({
+          loc: neighbor,
+          level,
+          visited: [...visited, nextKey],
+          distance: neighborDistance,
+        })
       }
     }
   }
 
-  console.log('the shortest path from AA to ZZ is', distanceCache.get(end))
+  return shortest
+}
+
+export function test() {
+  strictEqual(findShortestPathThroughMaze(read('test-maze1.txt')), 23)
+  strictEqual(findShortestPathThroughMaze(read('test-maze2.txt')), 58)
+  strictEqual(findShortestPathThroughMaze(read('test-maze3.txt'), true), 396)
+}
+
+export function part1(input: string) {
+  console.log(
+    'the shortest path from AA to ZZ is',
+    findShortestPathThroughMaze(input),
+  )
+}
+
+export function part2(input: string) {
+  console.log(
+    'the shortest path from AA to ZZ is',
+    findShortestPathThroughMaze(input, true),
+  )
 }
