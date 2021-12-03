@@ -9,35 +9,24 @@ function parseBinary(string: string) {
   return num
 }
 
-function analyze(input: string[]) {
+function findCommons(input: string[]) {
   const width = input[0].length
-
-  let gamma = ''
-  let epislon = ''
+  const result = new Array(width)
 
   for (let i = 0; i < width; i++) {
-    let count1 = 0
-    let count0 = 0
-    for (const row of input) {
-      if (row[i] === '1') {
-        count1 += 1
-      } else {
-        count0 += 1
-      }
-    }
-
-    if (count1 > count0) {
-      gamma += '1'
-      epislon += '0'
-    } else {
-      gamma += '0'
-      epislon += '1'
-    }
+    const count = input.filter((l) => l[i] === '1').length
+    result[i] = count > input.length / 2
   }
 
+  return result
+}
+
+function analyze(input: string[]) {
+  const oneMostCommon = findCommons(input)
+
   return {
-    gamma: parseBinary(gamma),
-    episilon: parseBinary(epislon),
+    gamma: parseBinary(oneMostCommon.map((x) => (x ? 1 : 0)).join('')),
+    episilon: parseBinary(oneMostCommon.map((x) => (x ? 0 : 1)).join('')),
   }
 }
 
