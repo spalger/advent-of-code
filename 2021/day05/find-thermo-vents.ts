@@ -5,7 +5,7 @@ import { p, Point } from '../../common/point'
 type Line = VerticalLine | HorizontalLine | DiagonalLine
 
 class Vents {
-  static parse(input: string, inlcudeDiagonals = false) {
+  static parse(input: string, includeDiagonals = false) {
     const specs = toLines(input)
 
     const lines: Line[] = []
@@ -22,7 +22,7 @@ class Vents {
         lines.push(
           new HorizontalLine(p(toInt(lx), toInt(ly)), p(toInt(rx), toInt(ry))),
         )
-      } else if (inlcudeDiagonals) {
+      } else if (includeDiagonals) {
         lines.push(
           new DiagonalLine(p(toInt(lx), toInt(ly)), p(toInt(rx), toInt(ry))),
         )
