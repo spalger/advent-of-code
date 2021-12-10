@@ -110,6 +110,16 @@ export class PointMap<Ent> {
     })
   }
 
+  filterPoints(test: (point: Point, ent: Ent) => boolean): Point[] {
+    const subset = []
+    for (const [point, ent] of this.points) {
+      if (test(point, ent)) {
+        subset.push(point)
+      }
+    }
+    return subset
+  }
+
   neighbors(p: Point) {
     const neighbors: [Point, Ent][] = []
 
