@@ -31,8 +31,24 @@ export class Point {
     return p(this.x, this.y - delta)
   }
 
+  bottomLeft(delta = 1) {
+    return p(this.x - delta, this.y - delta)
+  }
+
+  bottomRight(delta = 1) {
+    return p(this.x + delta, this.y - delta)
+  }
+
   top(delta = 1) {
     return p(this.x, this.y + delta)
+  }
+
+  topLeft(delta = 1) {
+    return p(this.x - delta, this.y + delta)
+  }
+
+  topRight(delta = 1) {
+    return p(this.x + delta, this.y + delta)
   }
 
   add(offset: Point) {

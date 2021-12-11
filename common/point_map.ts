@@ -124,38 +124,66 @@ export class PointMap<Ent> {
     const neighbors: [Point, Ent][] = []
 
     if (p.y < this.maxY) {
-      const top = p.top()
-      const ent = this.points.get(top)
-      if (ent !== undefined) {
-        neighbors.push([top, ent])
-      }
+      this.pushEntry(p.top(), neighbors)
     }
 
     if (p.x < this.maxX) {
-      const right = p.right()
-      const ent = this.points.get(right)
-      if (ent !== undefined) {
-        neighbors.push([right, ent])
-      }
+      this.pushEntry(p.right(), neighbors)
     }
 
     if (p.y > this.minY) {
-      const bottom = p.bottom()
-      const ent = this.points.get(bottom)
-      if (ent !== undefined) {
-        neighbors.push([bottom, ent])
-      }
+      this.pushEntry(p.bottom(), neighbors)
     }
 
     if (p.x > this.minX) {
-      const left = p.left()
-      const ent = this.points.get(left)
-      if (ent !== undefined) {
-        neighbors.push([left, ent])
-      }
+      this.pushEntry(p.left(), neighbors)
     }
 
     return neighbors
+  }
+
+  neighborsWithDiagonals(point: Point) {
+    const neighbors: [Point, Ent][] = []
+    if (point.y < this.maxY) {
+      if (point.x > this.minX) {
+        this.pushEntry(point.topLeft(), neighbors)
+      }
+
+      this.pushEntry(point.top(), neighbors)
+
+      if (point.x < this.maxX) {
+        this.pushEntry(point.topRight(), neighbors)
+      }
+    }
+
+    if (point.x < this.maxX) {
+      this.pushEntry(point.right(), neighbors)
+    }
+
+    if (point.y > this.minY) {
+      if (point.x < this.maxX) {
+        this.pushEntry(point.bottomRight(), neighbors)
+      }
+
+      this.pushEntry(point.bottom(), neighbors)
+
+      if (point.x > this.minX) {
+        this.pushEntry(point.bottomLeft(), neighbors)
+      }
+    }
+
+    if (point.x > this.minX) {
+      this.pushEntry(point.left(), neighbors)
+    }
+
+    return neighbors
+  }
+
+  private pushEntry(point: Point, arr: Array<[Point, Ent]>) {
+    const ent = this.points.get(point)
+    if (ent !== undefined) {
+      arr.push([point, ent])
+    }
   }
 
   *[Symbol.iterator]() {
