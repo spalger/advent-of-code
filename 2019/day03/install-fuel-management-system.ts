@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
 
-import { p, Point } from '../lib/point'
-import { repeat, intersect } from '../lib/array'
+import { p, Point } from '../../common/point'
+import { repeat, intersect } from '../../common/array'
 
 const ORIGIN = p(0, 0)
 

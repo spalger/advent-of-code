@@ -1,10 +1,10 @@
 import { deepStrictEqual } from 'assert'
 
-import { p, Point } from '../lib/point'
-import { dedent } from '../lib/string'
-import { shift } from '../lib/array'
-import { MazeGraph, Node } from '../lib/maze_graph'
-import { PointMap } from '../lib/point_map'
+import { p, Point } from '../../common/point'
+import { dedent } from '../../common/string'
+import { shift } from '../../common/array'
+import { MazeGraph, Node } from '../../common/maze_graph'
+import { PointMap } from '../../common/point_map'
 
 class Key {
   constructor(public readonly name: string, public readonly door: string) {}

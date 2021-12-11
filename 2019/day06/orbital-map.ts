@@ -1,6 +1,6 @@
 import { strictEqual } from 'assert'
 
-import { toLines, dedent } from '../lib/string'
+import { toLines, dedent } from '../../common/string'
 
 type Planets = Map<string, Planet>
 class Planet {

@@ -1,5 +1,5 @@
-import { toInt } from '../lib/number'
-import { shift } from '../lib/array'
+import { toInt } from './number'
+import { shift } from './array'
 
 const paramCounts = new Map([
   [1, 3],

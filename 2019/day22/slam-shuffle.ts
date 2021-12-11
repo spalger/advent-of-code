@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
 
-import { toLines, dedent } from '../lib/string'
-import { toInt } from '../lib/number'
-import { repeat } from '../lib/array'
+import { toLines, dedent } from '../../common/string'
+import { toInt } from '../../common/number'
+import { repeat } from '../../common/array'
 
 class Deck {
   public cards: number[]

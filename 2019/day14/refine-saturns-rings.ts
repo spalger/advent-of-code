@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
 
-import { toLines, dedent } from '../lib/string'
-import { toInt } from '../lib/number'
+import { toLines, dedent } from '../../common/string'
+import { toInt } from '../../common/number'
 
 const TRILLION = 1_000_000_000_000
 

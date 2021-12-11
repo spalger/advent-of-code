@@ -1,8 +1,8 @@
 import { strictEqual, deepStrictEqual } from 'assert'
 
-import { p, Point } from '../lib/point'
-import { toLines, dedent } from '../lib/string'
-import { shift } from '../lib/array'
+import { p, Point } from '../../common/point'
+import { toLines, dedent } from '../../common/string'
+import { shift } from '../../common/array'
 
 class AsteroidMap {
   constructor(

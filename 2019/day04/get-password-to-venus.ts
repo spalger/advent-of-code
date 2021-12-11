@@ -1,4 +1,4 @@
-import { repeat } from '../lib/array'
+import { repeat } from '../../common/array'
 /**
  * a few key facts about the password:
  *

@@ -4,9 +4,9 @@ import {
   bigIntCodeGenerator,
   InputReq,
   Output,
-} from '../lib/intcode-computer'
-import { p, Point } from '../lib/point'
-import { ElementType } from '../lib/ts'
+} from '../../common/intcode-computer'
+import { p, Point } from '../../common/point'
+import { ElementType } from '../../common/ts'
 
 const entityMap = [
   'empty',

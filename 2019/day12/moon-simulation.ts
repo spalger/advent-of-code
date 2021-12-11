@@ -1,8 +1,8 @@
 import { strictEqual, deepStrictEqual } from 'assert'
 
-import { toLines } from '../lib/string'
-import { toInt, lcm } from '../lib/number'
-import { ElementType } from '../lib/ts'
+import { toLines } from '../../common/string'
+import { toInt, lcm } from '../../common/number'
+import { ElementType } from '../../common/ts'
 
 const dirs = ['x', 'y', 'z'] as const
 type Dir = ElementType<typeof dirs>

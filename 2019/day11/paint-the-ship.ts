@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 
-import { bigIntCodeGenerator, InputReq, Output } from '../lib/intcode-computer'
-import { p, Point } from '../lib/point'
+import { bigIntCodeGenerator, InputReq, Output } from '../../common/intcode-computer'
+import { p, Point } from '../../common/point'
 
 function paintHull(code: string, startOnWhite = false) {
   let pos = p(0, 0)

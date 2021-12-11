@@ -1,4 +1,4 @@
-import { dedent } from '../../2019/lib/string'
+import { dedent } from '../../common//string'
 
 function parseDeck(chunk: string) {
   return chunk

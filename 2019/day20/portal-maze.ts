@@ -2,11 +2,11 @@ import { strictEqual } from 'assert'
 import * as Fs from 'fs'
 import * as Path from 'path'
 
-import { PointMap } from '../lib/point_map'
-import { MazeGraph, Node } from '../lib/maze_graph'
-import { Point } from '../lib/point'
-import { shift } from '../lib/array'
-import { memoize } from '../lib/fn'
+import { PointMap } from '../../common/point_map'
+import { MazeGraph, Node } from '../../common/maze_graph'
+import { Point } from '../../common/point'
+import { shift } from '../../common/array'
+import { memoize } from '../../common/fn'
 
 const read = (p: string) => Fs.readFileSync(Path.resolve(__dirname, p), 'utf-8')
 

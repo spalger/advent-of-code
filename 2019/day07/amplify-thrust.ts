@@ -7,9 +7,9 @@ import {
   IntSource,
   InputReq,
   Output,
-} from '../lib/intcode-computer'
-import { iterCombinations } from '../lib/generator'
-import { repeat, shift } from '../lib/array'
+} from '../../common/intcode-computer'
+import { iterCombinations } from '../../common/generator'
+import { repeat, shift } from '../../common/array'
 
 function determineOutputThrust(phases: number[], code: string | IntSource) {
   let output = 0n
