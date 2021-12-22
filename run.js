@@ -121,6 +121,12 @@ for (const { dir, year, day } of selectedDays) {
       if (run) tasks.push('run')
     }
 
+    // load the test input from file
+    const testInput = Fs.existsSync(Path.resolve(dir, 'test-input.txt'))
+      ? Fs.readFileSync(Path.resolve(dir, 'test-input.txt'), 'utf-8')
+      : undefined
+    const testInDesc = testInput ? ', test-input.txt' : ''
+
     // load the input from file
     const input = Fs.existsSync(Path.resolve(dir, 'input.txt'))
       ? Fs.readFileSync(Path.resolve(dir, 'input.txt'), 'utf-8')
@@ -131,7 +137,7 @@ for (const { dir, year, day } of selectedDays) {
     for (const task of tasks) {
       switch (task) {
         case 'test':
-          exec(`test(${solution}):`, test)
+          exec(`test(${solution}${testInDesc}):`, test, testInput)
           break
         case 'part1':
           exec(`part1(${solution}${inDesc})`, part1, input)
