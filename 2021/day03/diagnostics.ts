@@ -1,13 +1,6 @@
 import { deepStrictEqual } from 'assert'
 import { toLines, dedent } from '../../common/string'
-
-function parseBinary(string: string) {
-  const num = parseInt(string, 2)
-  if (isNaN(num)) {
-    throw new Error(`string [${string}] is not valid binary`)
-  }
-  return num
-}
+import { binaryToInt } from '../../common/number'
 
 function getMostCommon(input: string[], i: number) {
   const half = input.length / 2
@@ -23,8 +16,8 @@ function analyze(input: string[]) {
   }
 
   return {
-    gamma: parseBinary(oneMostCommon.map((x) => (x ? 1 : 0)).join('')),
-    episilon: parseBinary(oneMostCommon.map((x) => (x ? 0 : 1)).join('')),
+    gamma: binaryToInt(oneMostCommon.map((x) => (x ? 1 : 0)).join('')),
+    episilon: binaryToInt(oneMostCommon.map((x) => (x ? 0 : 1)).join('')),
   }
 }
 
@@ -70,7 +63,7 @@ function findOxygenGeneratorRating(input: string[]) {
     options = options.filter((n) => n[i] === x)
 
     if (options.length === 1) {
-      return parseBinary(options[0])
+      return binaryToInt(options[0])
     }
 
     if (options.length === 0) {
@@ -89,7 +82,7 @@ function findCo2ScrubberRating(input: string[]) {
     options = options.filter((n) => n[i] === x)
 
     if (options.length === 1) {
-      return parseBinary(options[0])
+      return binaryToInt(options[0])
     }
 
     if (options.length === 0) {

@@ -1,5 +1,20 @@
+export function bitsToInt(bits: number[]) {
+  return binaryToInt(bits.join(''))
+}
+
+function checkNum(n: number, input: string, expected: string) {
+  if (Number.isNaN(n)) {
+    throw new Error(`string [${input}] can't be parsed as a ${expected}`)
+  }
+  return n
+}
+
+export function binaryToInt(s: string) {
+  return checkNum(parseInt(s, 2), s, 'binary')
+}
+
 export function toInt(s: string) {
-  return parseInt(s, 10)
+  return checkNum(parseInt(s, 10), s, 'integer')
 }
 
 /**

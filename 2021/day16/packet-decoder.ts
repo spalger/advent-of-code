@@ -1,4 +1,6 @@
 import { strictEqual } from 'assert'
+import { bitsToInt } from '../../common/number'
+
 const HEX = {
   '0': [0, 0, 0, 0],
   '1': [0, 0, 0, 1],
@@ -20,8 +22,6 @@ const HEX = {
 
 const isHex = (char: string): char is keyof typeof HEX =>
   Object.prototype.hasOwnProperty.call(HEX, char)
-
-const bitsToInt = (bits: number[]) => parseInt(bits.join(''), 2)
 
 class BitReader {
   static fromHex(hex: string) {
