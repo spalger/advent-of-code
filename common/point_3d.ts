@@ -1,4 +1,20 @@
 export class Point3d {
+  static min(a: Point3d, b: Point3d) {
+    return new Point3d(
+      Math.min(a.x, b.x),
+      Math.min(a.y, b.y),
+      Math.min(a.z, b.z),
+    )
+  }
+
+  static max(a: Point3d, b: Point3d) {
+    return new Point3d(
+      Math.max(a.x, b.x),
+      Math.max(a.y, b.y),
+      Math.max(a.z, b.z),
+    )
+  }
+
   public key: string
   constructor(
     public readonly x: number,
