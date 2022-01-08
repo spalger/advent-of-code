@@ -13,8 +13,8 @@ class Cavern {
   public readonly entrance: Point
   public readonly exit: Point
   constructor(public readonly map: PointMap<number>) {
-    this.entrance = p(0, map.maxY)
-    this.exit = p(map.maxX, 0)
+    this.entrance = p(map.minX, map.maxY)
+    this.exit = p(map.maxX, map.minY)
   }
 
   getRiskLevel(point: Point) {
@@ -24,41 +24,115 @@ class Cavern {
     }
     return riskLevel
   }
-}
 
-function findLowestRiskPath(cavern: Cavern) {
-  const steps = new Map<Point, { riskLevel: number; next: Point[] }>()
-  for (const [point] of cavern.map.points) {
-    const next = []
-    if (point !== cavern.exit) {
-      for (const [neighbor] of cavern.map.neighbors(point)) {
-        next.push(neighbor)
+  expandToFullMap() {
+    const newPoints = new Map<Point, number>()
+
+    for (let x = 0; x < 5; x++) {
+      for (let y = 4; y >= 0; y--) {
+        for (const [sourcePoint, sourceCost] of this.map.points) {
+          const newCost = sourceCost + p(x, y).mdist(p(0, 4))
+          newPoints.set(
+            sourcePoint.add(
+              p((this.map.maxX + 1) * x, (this.map.maxY + 1) * y),
+            ),
+            newCost < 10 ? newCost : 1 + (newCost % 10),
+          )
+        }
       }
     }
 
-    steps.set(point, {
-      next,
-      riskLevel: Infinity,
-    })
+    return new Cavern(new PointMap(newPoints))
   }
+}
 
-  const start = steps.get(cavern.entrance)!
-  start.riskLevel = 0
-  const queue = new Set([start])
-  for (const step of queue) {
-    for (const nextPoint of step.next) {
-      const nextStep = steps.get(nextPoint)!
-      nextStep.riskLevel = Math.min(
-        cavern.getRiskLevel(nextPoint) + step.riskLevel,
-        nextStep.riskLevel,
-      )
-      queue.add(nextStep)
+class Path {
+  constructor(
+    public readonly cost: number,
+    public readonly history: Point[],
+    public readonly end: Point,
+  ) {}
+
+  next(cavern: Cavern) {
+    const newHistory = [...this.history, this.end]
+    const next: Path[] = []
+
+    if (this.end.y < cavern.map.maxY) {
+      const p = this.end.top()
+      if (!this.history.includes(p)) {
+        next.push(new Path(this.cost + cavern.getRiskLevel(p), newHistory, p))
+      }
+    }
+
+    if (this.end.x < cavern.map.maxX) {
+      const p = this.end.right()
+      if (!this.history.includes(p)) {
+        next.push(new Path(this.cost + cavern.getRiskLevel(p), newHistory, p))
+      }
+    }
+
+    if (this.end.y > cavern.map.minY) {
+      const p = this.end.bottom()
+      if (!this.history.includes(p)) {
+        next.push(new Path(this.cost + cavern.getRiskLevel(p), newHistory, p))
+      }
+    }
+
+    if (this.end.x > cavern.map.minX) {
+      const p = this.end.left()
+      if (!this.history.includes(p)) {
+        next.push(new Path(this.cost + cavern.getRiskLevel(p), newHistory, p))
+      }
+    }
+
+    return next
+  }
+}
+
+function findLowestRiskPath(cavern: Cavern) {
+  const starting = new Path(0, [], cavern.entrance)
+  const cheapestToPoint = new Map<Point, Path>([[starting.end, starting]])
+
+  const queue = [starting]
+  findCheapest: while (queue.length) {
+    const path = queue.shift()!
+
+    for (const next of path.next(cavern)) {
+      const cheapest = cheapestToPoint.get(next.end)
+      if (cheapest && cheapest.cost <= next.cost) {
+        // skip this path, we already have a faster path to this point
+        continue
+      }
+
+      cheapestToPoint.set(next.end, next)
+
+      if (next.end === cavern.exit) {
+        break findCheapest
+      }
+
+      const insertionPoint = queue.findIndex((p) => p.cost >= next.cost)
+      if (insertionPoint === -1) {
+        queue.push(next)
+      } else if (insertionPoint === 0) {
+        queue.unshift(next)
+      } else {
+        queue.splice(insertionPoint - 1, 0, next)
+      }
     }
   }
 
-  const endStep = steps.get(cavern.exit)!
-  console.log('lowest risk level to get to exit is', endStep.riskLevel)
-  return endStep.riskLevel
+  const cheapest = cheapestToPoint.get(cavern.exit)
+  if (!cheapest) {
+    throw new Error('failed to find cheapest path')
+  }
+  console.log(
+    'the safest path has a risk level of',
+    cheapest.cost,
+    'and',
+    cheapest.history.length + 1,
+    'steps',
+  )
+  return cheapest.cost
 }
 
 export function test() {
@@ -76,9 +150,13 @@ export function test() {
   `)
 
   strictEqual(findLowestRiskPath(cavern), 40)
+  strictEqual(findLowestRiskPath(cavern.expandToFullMap()), 315)
 }
 
 export function part1(input: string) {
-  const cavern = Cavern.fromString(input)
-  findLowestRiskPath(cavern)
+  findLowestRiskPath(Cavern.fromString(input))
+}
+
+export function part2(input: string) {
+  findLowestRiskPath(Cavern.fromString(input).expandToFullMap())
 }
