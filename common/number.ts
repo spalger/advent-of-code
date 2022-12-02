@@ -17,6 +17,11 @@ export function toInt(s: string) {
   return checkNum(parseInt(s, 10), s, 'integer')
 }
 
+export function maybeToInt(s: string) {
+  const n = parseInt(s, 10)
+  return Number.isNaN(n) ? undefined : n
+}
+
 /**
  * Find the greatest common factor bettwen a and b
  */
@@ -48,4 +53,18 @@ export function gcd(a: number, b: number): number {
  */
 export function lcm(a: number, b: number) {
   return Math.abs(a * b) / gcd(a, b)
+}
+
+export const max = (a: number, b: number) => Math.max(a, b)
+export const sum = (a: number, b: number) => a + b
+
+/**
+ * Get the max from a list of numbers
+ */
+export function getMax(numbers: number[]) {
+  return numbers.reduce(max, -Infinity)
+}
+
+export function getSum(numbers: number[]) {
+  return numbers.reduce(sum, 0)
 }
