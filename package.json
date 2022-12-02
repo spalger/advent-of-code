@@ -5,25 +5,23 @@
   "license": "MIT",
   "author": "spalger <spalger@users.noreply.github.com>",
   "main": "index.js",
-  "devDependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/plugin-proposal-class-properties": "^7.12.1",
-    "@babel/plugin-transform-modules-commonjs": "^7.12.1",
-    "@babel/preset-typescript": "^7.12.7",
-    "@babel/register": "^7.12.10",
-    "@types/node": "^14.14.12",
-    "@typescript-eslint/eslint-plugin": "^4.11.0",
-    "@typescript-eslint/parser": "^4.11.0",
-    "chalk": "^4.1.0",
-    "eslint": "^7.15.0",
-    "eslint-config-prettier": "^7.0.0",
-    "eslint-plugin-prettier": "^3.2.0",
-    "getopts": "^2.2.5",
-    "prettier": "^2.2.1",
-    "typescript": "^4.1.3"
-  },
   "dependencies": {
+    "@babel/core": "*",
+    "@babel/plugin-proposal-class-properties": "*",
+    "@babel/plugin-transform-modules-commonjs": "*",
+    "@babel/preset-typescript": "*",
+    "@babel/register": "*",
+    "@types/node": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "@typescript-eslint/parser": "*",
+    "chalk": "^4.1.0",
+    "eslint": "*",
+    "eslint-config-prettier": "*",
+    "eslint-plugin-prettier": "*",
+    "getopts": "^2.2.5",
     "johnson-trotter": "^0.1.1",
-    "strip-ansi": "^6.0.0"
+    "prettier": "*",
+    "strip-ansi": "^6.0.0",
+    "typescript": "*"
   }
 }
