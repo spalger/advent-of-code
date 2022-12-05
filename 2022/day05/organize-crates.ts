@@ -1,5 +1,6 @@
 import { deepStrictEqual } from 'assert'
-import { toLines } from '../../common/string'
+import { toLines, chunk } from '../../common/string'
+import { getMax } from '../../common/number'
 import { toInt } from '../../common/number'
 
 type Change = {
@@ -25,29 +26,17 @@ const parseInitialPositions = (init: string) => {
   const rows = init
     .split('\n')
     .slice(0, -1)
-    .map((line) => {
-      const row: Array<null | string> = []
-      for (let i = 0; i < line.length; i++) {
-        const value = line.slice(i, i + 3)
-        if (value === '   ') {
-          row.push(null)
-        } else {
-          row.push(value[1])
-        }
-        i = i + 3
-      }
-      return row
-    })
+    .map((line) =>
+      chunk(line, 4, { allowUneven: true }).map((ch) =>
+        ch.trim() ? ch[1] : null,
+      ),
+    )
 
   if (!rows.length) {
     throw new Error('unable to parse grid')
   }
 
-  const width = rows[0].length
-  if (rows.some((r) => r.length !== width)) {
-    throw new Error(`expected every row to have a length of ${width}`)
-  }
-
+  const width = getMax(rows.map((r) => r.length))
   const columns: string[][] = []
   for (let col = 0; col < width; col++) {
     const crates: string[] = []
@@ -72,6 +61,7 @@ const parseInitialPositions = (init: string) => {
 
   return columns
 }
+
 const parse = (map: string) => {
   const [initial, changes] = map.split('\n\n')
   return {
@@ -96,18 +86,8 @@ const apply = (initial: string[][], steps: Change[], oneByOne: boolean) => {
 
 const hash = (columns: string[][]) => columns.map((c) => c[0]).join('')
 
-export function test() {
-  const pairs = parse(`    [D]    
-[N] [C]    
-[Z] [M] [P]
- 1   2   3  
-
-move 1 from 2 to 1
-move 3 from 1 to 3
-move 2 from 2 to 1
-move 1 from 1 to 2
-  `)
-
+export function test(input: string) {
+  const pairs = parse(input)
   deepStrictEqual(hash(apply(pairs.columns, pairs.changes, true)), 'CMZ')
   deepStrictEqual(hash(apply(pairs.columns, pairs.changes, false)), 'MCD')
 }

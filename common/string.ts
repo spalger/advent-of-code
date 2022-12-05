@@ -39,3 +39,24 @@ export function dedent(
 
   return output.join('\n')
 }
+
+export function chunk(
+  str: string,
+  size: number,
+  options?: { allowUneven?: boolean },
+): string[] {
+  const len = str.length
+
+  if (!options?.allowUneven && len % size !== 0) {
+    throw new Error(
+      `string with length ${len} can not be devided evenly by ${size}`,
+    )
+  }
+
+  const chunks: string[] = []
+  for (let i = 0; i < len; i += 4) {
+    chunks.push(str.slice(i, i + size))
+  }
+
+  return chunks
+}
