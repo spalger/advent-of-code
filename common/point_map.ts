@@ -1,16 +1,17 @@
 import { p, Point } from './point'
 import { repeat } from './array'
 import { toLines } from './string'
+
 export class PointMap<Ent> {
-  static fromString(input: string) {
-    return PointMap.fromGenerator<string>(function* () {
+  static fromString<T = string>(input: string, map?: (ent: string) => T) {
+    return PointMap.fromGenerator<T>(function* () {
       const lines = toLines(input)
       for (let li = 0; li < lines.length; li++) {
         const y = lines.length - li - 1
         const line = lines[li]
         for (let x = 0; x < line.length; x++) {
           if (line[x] && line[x] !== ' ') {
-            yield [p(x, y), line[x]]
+            yield [p(x, y), (map ? map(line[x]) : line[x]) as T]
           }
         }
       }
@@ -196,5 +197,35 @@ export class PointMap<Ent> {
         }
       }
     }
+  }
+
+  get(point: Point) {
+    const value = this.points.get(point)
+    if (value === undefined) {
+      throw new Error('point is not in map')
+    }
+    return value
+  }
+
+  isOutside(point: Point) {
+    return (
+      point.x < this.minX ||
+      point.x > this.maxX ||
+      point.y < this.minY ||
+      point.y > this.maxY
+    )
+  }
+
+  isInside(point: Point) {
+    return !this.isOutside(point)
+  }
+
+  isEdge(point: Point) {
+    return (
+      point.x === this.minX ||
+      point.x === this.maxX ||
+      point.y === this.minY ||
+      point.y === this.maxY
+    )
   }
 }
