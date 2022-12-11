@@ -1,6 +1,7 @@
 import { deepEqual } from 'assert'
 import { dedent, toLines } from '../../common/string'
 import { toInt } from '../../common/number'
+import { repeat } from '../../common/array'
 
 type Prog = Array<'noop' | number>
 
@@ -14,29 +15,55 @@ function parse(input: string): Prog {
   })
 }
 
-type SimpleProgState = [number, number]
+class State {
+  // start a phase 1 with x of 1
+  private readonly x = new Map<number, number>([[1, 1]])
+
+  constructor(prog: Prog) {
+    for (const step of prog) {
+      const current = this.get(this.x.size)
+      if (step === 'noop') {
+        this.x.set(this.x.size + 1, current)
+      } else {
+        this.x.set(this.x.size + 1, current)
+        this.x.set(this.x.size + 1, current + step)
+      }
+    }
+  }
+
+  get(phase: number) {
+    const x = this.x.get(phase)
+    if (x === undefined) {
+      throw new Error(`unable to get the value of x for future phase ${phase}`)
+    }
+    return x
+  }
+
+  has(phase: number) {
+    return this.x.has(phase)
+  }
+}
 
 const sumSignalStrengths = (prog: Prog) => {
-  let state: SimpleProgState = [1, 1]
+  const state = new State(prog)
+
   let sum = 0
-  let nextInterestingPoint = 20
-  for (const step of prog) {
-    const next: SimpleProgState =
-      step === 'noop'
-        ? [state[0] + 1, state[1]]
-        : [state[0] + 2, state[1] + step]
-
-    if (state[0] < nextInterestingPoint && next[0] >= nextInterestingPoint) {
-      sum +=
-        nextInterestingPoint *
-        (next[0] === nextInterestingPoint ? next[1] : state[1])
-      nextInterestingPoint += 40
-    }
-
-    state = next
+  for (let interesting = 20; state.has(interesting); interesting += 40) {
+    sum += interesting * state.get(interesting)
   }
 
   return sum
+}
+
+const crt = (prog: Prog) => {
+  const state = new State(prog)
+  return repeat(6, (r) =>
+    repeat(40, (c) => {
+      const phase = 1 + (r * 40 + c)
+      const sprite = state.get(phase)
+      return c >= sprite - 1 && c <= sprite + 1 ? '#' : ' '
+    }).join(''),
+  ).join('\n')
 }
 
 export function test() {
@@ -190,6 +217,7 @@ export function test() {
   `)
 
   deepEqual(sumSignalStrengths(prog), 13140)
+  console.log(crt(prog))
 }
 
 export function part1(input: string) {
@@ -197,4 +225,8 @@ export function part1(input: string) {
     'the sum of all interesting signal strengths is',
     sumSignalStrengths(parse(input)),
   )
+}
+
+export function part2(input: string) {
+  console.log(crt(parse(input)))
 }
