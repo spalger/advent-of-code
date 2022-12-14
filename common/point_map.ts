@@ -3,7 +3,10 @@ import { repeat } from './array'
 import { toLines } from './string'
 
 export class PointMap<Ent> {
-  static fromString<T = string>(input: string, map?: (ent: string) => T) {
+  static fromString<T = string>(
+    input: string,
+    map?: (ent: string, point: Point) => T,
+  ) {
     return PointMap.fromGenerator<T>(function* () {
       const lines = toLines(input)
       for (let li = 0; li < lines.length; li++) {
@@ -11,7 +14,8 @@ export class PointMap<Ent> {
         const line = lines[li]
         for (let x = 0; x < line.length; x++) {
           if (line[x] && line[x] !== ' ') {
-            yield [p(x, y), (map ? map(line[x]) : line[x]) as T]
+            const point = p(x, y)
+            yield [point, (map ? map(line[x], point) : line[x]) as T]
           }
         }
       }
