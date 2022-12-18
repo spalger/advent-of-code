@@ -97,7 +97,9 @@ export class PointMap<Ent> {
       lines.push(line)
     }
 
-    const xs = repeat(1 + (this.maxX - this.minX), (i) => this.minX + i)
+    const xs = repeat(1 + (this.maxX - this.minX), (i) =>
+      Math.abs(this.minX + i),
+    )
 
     lines.push(
       '   ' + xs.map((i) => (i < 10 ? i : Math.floor((i % 100) / 10))).join(''),
