@@ -26,7 +26,7 @@ export class PointMap<Ent> {
     return PointMap.fromIterable(gen())
   }
 
-  static fromIterable<Ent>(iter: Iterable<[Point, Ent]>) {
+  static fromIterable<Ent>(iter: Iterable<readonly [Point, Ent]>) {
     return new PointMap(new Map(iter))
   }
 
@@ -60,13 +60,17 @@ export class PointMap<Ent> {
     return new PointMap(points)
   }
 
-  public readonly minX = Infinity
-  public readonly maxX = -Infinity
-  public readonly minY = Infinity
-  public readonly maxY = -Infinity
+  public minX = Infinity
+  public maxX = -Infinity
+  public minY = Infinity
+  public maxY = -Infinity
 
   constructor(public readonly points: Map<Point, Ent>) {
-    for (const p of points.keys()) {
+    this.resetBounds()
+  }
+
+  resetBounds() {
+    for (const p of this.points.keys()) {
       this.minX = Math.min(this.minX, p.x)
       this.maxX = Math.max(this.maxX, p.x)
       this.minY = Math.min(this.minY, p.y)
