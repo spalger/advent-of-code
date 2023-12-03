@@ -19,27 +19,21 @@ parseGameId = \str ->
 parseDraw = \draw ->
     Str.split draw ","
     |> List.map Str.trim
-    |> List.walk { red: 0, blue: 0, green: 0 } \acc, cubeCount ->
+    |> List.walk (Dict.empty {}) \acc, cubeCount ->
         when Str.split cubeCount " " is
-            [num, "red"] -> { acc & red: acc.red + intOrCrash num }
-            [num, "blue"] -> { acc & blue: acc.blue + intOrCrash num }
-            [num, "green"] -> { acc & green: acc.green + intOrCrash num }
+            [num, color] -> Dict.insert acc color (intOrCrash num)
             _ -> crash "expected draw to be a number and color separated by a space: \(cubeCount)"
-
-parseDraws = \str ->
-    Str.split str ";"
-    |> List.map Str.trim
-    |> List.map parseDraw
-
-parseGame = \str ->
-    when Str.split str ": " is
-        [label, draws] -> { id: parseGameId label, draws: parseDraws draws }
-        _ -> crash "unable to parse game: \(str)"
 
 parseGames = \str ->
     str
     |> Str.split "\n" 
-    |> List.map parseGame
+    |> List.map \game ->
+        when Str.split game ": " is
+            [label, draws] -> {
+                id: parseGameId label,
+                draws: Str.split draws "; " |> List.map parseDraw
+            }
+            _ -> crash "unable to parse game: \(game)"
 
 example =
     """
@@ -50,27 +44,11 @@ example =
     Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
     """
 
-expect
-    parseGames example == [
-        { id: 1, draws: [{ red: 4, green: 0, blue: 3 }, { red: 1, green: 2, blue: 6 }, { red: 0, green: 2, blue: 0 }] },
-        { id: 2, draws: [{ red: 0, green: 2, blue: 1 }, { red: 1, green: 3, blue: 4 }, { red: 0, green: 1, blue: 1, }] },
-        { id: 3, draws: [{ red: 20, green: 8, blue: 6 }, { red: 4, green: 13, blue: 5 }, { red: 1, green: 5, blue: 0 }] },
-        { id: 4, draws: [{ red: 3, green: 1, blue: 6 }, { red: 6, green: 3, blue: 0 }, { red: 14, green: 3, blue: 15 }] },
-        { id: 5, draws: [{ red: 6, green: 3, blue: 1 }, { red: 1, green: 2, blue: 2 }] }
-    ]
-
-maxCubes = \draws ->
-    List.walk draws { red: 0, green: 0, blue: 0 } \max, draw -> {
-        red: Num.max max.red draw.red,
-        green: Num.max max.green draw.green,
-        blue: Num.max max.blue draw.blue
-    }
-
-filterPossibleGames = \games, redLimit, greenLimit, blueLimit ->
-    games
-    |> List.keepIf \game ->
-        max = maxCubes game.draws
-        max.red <= redLimit && max.green <= greenLimit && max.blue <= blueLimit
+max = \game, color ->
+    game.draws
+    |> List.map \draw ->
+        Dict.get draw color |> Result.withDefault 0
+    |> List.walk 0 Num.max
 
 sumGameIds = \games ->
     games
@@ -78,7 +56,10 @@ sumGameIds = \games ->
 
 part1 = \str ->
     parseGames str
-    |> filterPossibleGames 12 13 14
+    |> List.keepIf \game ->
+        (max game "red") <= 12 &&
+        (max game "green") <= 13 &&
+        (max game "blue") <= 14
     |> sumGameIds
 
 expect
@@ -86,8 +67,11 @@ expect
 
 part2 = \str ->
     parseGames str
-    |> List.map \game -> maxCubes game.draws
-    |> List.walk 0 \sum, max -> sum + (max.red * max.green * max.blue)
+    |> List.walk 0 \sum, game -> sum + (
+        (max game "red") *
+        (max game "green") *
+        (max game "blue")
+    )
 
 expect
     part2 example == 2286
