@@ -1,5 +1,5 @@
 package "lib"
-  exposes [
-    Parse,
-  ]
-  packages {}
+    exposes [
+        Parse,
+    ]
+    packages {}

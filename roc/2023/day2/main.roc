@@ -15,7 +15,6 @@ parseGame = \game ->
     id =
         label
         |> Parse.dropLeft "Game "
-        |> Parse.firstWord
         |> Parse.int
 
     draws =
