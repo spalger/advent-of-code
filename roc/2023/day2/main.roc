@@ -1,39 +1,34 @@
 app "AoC"
-    packages { pf: "../../../basic-cli/src/main.roc" }
-    imports [pf.Stdout, pf.Task.{ Task }, "input.txt" as input : Str]
+    packages { pf: "../../../basic-cli/src/main.roc", lib: "../../lib/main.roc" }
+    imports [pf.Stdout, lib.Parse, "input.txt" as input : Str]
     provides [main] to pf
-
-main : Task {} *
-main = Stdout.line "part1 \(Num.toStr(part1 input))\npart2 \(Num.toStr(part2 input))"
-
-intOrCrash = \str ->
-    when Str.toU32 str is
-        Ok num -> num
-        _ -> crash "unable to parse int: \(str)"
-
-parseGameId = \str ->
-    when Str.split str " " is
-        ["Game", id] -> intOrCrash id
-        _ -> crash "unable to parse game id: \(str)"
 
 parseDraw = \draw ->
     Str.split draw ","
     |> List.map Str.trim
     |> List.walk (Dict.empty {}) \acc, cubeCount ->
-        when Str.split cubeCount " " is
-            [num, color] -> Dict.insert acc color (intOrCrash num)
-            _ -> crash "expected draw to be a number and color separated by a space: \(cubeCount)"
+        (num, color) = Parse.intoTwo cubeCount " "
+        Dict.insert acc color (Parse.int num)
+
+parseGame = \game ->
+    (label, drawsStr) = Parse.intoTwo game ": "
+    id =
+        label
+        |> Parse.dropLeft "Game "
+        |> Parse.firstWord
+        |> Parse.int
+
+    draws =
+        drawsStr
+        |> Str.split "; "
+        |> List.map parseDraw
+
+    { id, draws }
 
 parseGames = \str ->
     str
-    |> Str.split "\n" 
-    |> List.map \game ->
-        when Str.split game ": " is
-            [label, draws] -> {
-                id: parseGameId label,
-                draws: Str.split draws "; " |> List.map parseDraw
-            }
-            _ -> crash "unable to parse game: \(game)"
+    |> Str.split "\n"
+    |> List.map parseGame
 
 example =
     """
@@ -47,31 +42,29 @@ example =
 max = \game, color ->
     game.draws
     |> List.map \draw ->
-        Dict.get draw color |> Result.withDefault 0
-    |> List.walk 0 Num.max
-
-sumGameIds = \games ->
-    games
-    |> List.walk 0 \sum, game -> sum + game.id
+        Dict.get draw color
+        |> Result.withDefault 0
+    |> List.max
+    |> Result.withDefault 0
 
 part1 = \str ->
     parseGames str
     |> List.keepIf \game ->
-        (max game "red") <= 12 &&
-        (max game "green") <= 13 &&
-        (max game "blue") <= 14
-    |> sumGameIds
+        (max game "red") <= 12
+        && (max game "green") <= 13
+        && (max game "blue") <= 14
+    |> List.map .id
+    |> List.sum
 
 expect
     part1 example == 8
 
 part2 = \str ->
     parseGames str
-    |> List.walk 0 \sum, game -> sum + (
-        (max game "red") *
-        (max game "green") *
-        (max game "blue")
-    )
+    |> List.map \game -> (max game "red") * (max game "green") * (max game "blue")
+    |> List.sum
 
 expect
     part2 example == 2286
+
+main = Stdout.line "part1 \(Num.toStr (part1 input))\npart2 \(Num.toStr (part2 input))"
