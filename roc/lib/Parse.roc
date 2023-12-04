@@ -1,8 +1,8 @@
 interface Parse
     exposes [
         strFromUtf8,
-        int,
-        intFromUtf8,
+        i32,
+        i32FromUtf8,
         dropLeft,
         intoTwo,
     ]
@@ -13,13 +13,13 @@ strFromUtf8 = \bytes ->
         Ok str -> str
         _ -> crash "unable to parse str from utf8 bytes"
 
-int = \str ->
-    when Str.toU32 str is
+i32 = \str ->
+    when Str.toI32 str is
         Ok num -> num
         _ -> crash "unable to parse int: \(str)"
 
-intFromUtf8 = \bytes ->
-    int (strFromUtf8 bytes)
+i32FromUtf8 = \bytes ->
+    i32 (strFromUtf8 bytes)
 
 dropLeft = \str, lead ->
     (left, right) = intoTwo str lead

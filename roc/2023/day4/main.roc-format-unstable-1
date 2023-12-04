@@ -24,8 +24,8 @@ parseNums = \str ->
     |> List.dropIf Str.isEmpty
     |> List.map Parse.i32
 
-Card: { count: Nat, winning: List I32, have: List I32 }
-parseCard: Str -> Card
+Card : { count : Nat, winning : List I32, have : List I32 }
+parseCard : Str -> Card
 parseCard = \str ->
     (_, numbers) = Parse.intoTwo str ":"
     (winning, have) = Parse.intoTwo numbers "|"
@@ -48,25 +48,25 @@ getTotalScore = \str ->
 expect (getTotalScore example) == 13
 
 winCount = \{ winning, have } ->
-    List.countIf have \num -> List.contains winning num        
+    List.countIf have \num -> List.contains winning num
 
 incrCardCount = \cards, startAt, endBefore, count ->
     List.mapWithIndex cards \card, i ->
         if i >= startAt && i <= endBefore then
             { card & count: card.count + count }
-        else card
+        else
+            card
 
 getTotalCardCount = \str ->
     initialCards = Str.split str "\n" |> List.map parseCard
-    
+
     initialCards
-    |> List.mapWithIndex \_, i -> i 
+    |> List.mapWithIndex \_, i -> i
     |> List.walk initialCards \cards, i ->
-        card = (
-            when List.get cards i is
-                Ok c -> c
-                _ -> crash "card index out of bounds"
-        )
+        card =
+        when List.get cards i is
+            Ok c -> c
+            _ -> crash "card index out of bounds"
 
         incrCardCount cards (i + 1) (i + (winCount card)) card.count
     |> List.map .count
@@ -76,6 +76,6 @@ expect (getTotalCardCount example) == 30
 
 main = Stdout.line
     """
-    part 1 \(Num.toStr(getTotalScore input))
-    part 2 \(Num.toStr(getTotalCardCount input))
+    part 1 \(Num.toStr (getTotalScore input))
+    part 2 \(Num.toStr (getTotalCardCount input))
     """
