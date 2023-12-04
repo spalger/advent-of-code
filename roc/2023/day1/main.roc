@@ -1,5 +1,5 @@
 app "AoC"
-    packages { pf: "../../../basic-cli/src/main.roc" }
+    packages { pf: "../../basic-cli/src/main.roc" }
     imports [pf.Stdout, pf.Task.{ Task }, "input.txt" as input : Str]
     provides [main] to pf
 

@@ -1,5 +1,5 @@
 app "AoC"
-    packages { pf: "../../../basic-cli/src/main.roc", lib: "../../lib/main.roc" }
+    packages { pf: "../../basic-cli/src/main.roc", lib: "../../lib/main.roc" }
     imports [
         pf.Stdout,
         lib.Parse,
