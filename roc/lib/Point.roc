@@ -14,7 +14,7 @@ interface Point
     ]
     imports []
 
-Point : (I32, I32)
+Point : (i64, i64)
 
 neighbors : Point -> List Point
 neighbors = \p -> [

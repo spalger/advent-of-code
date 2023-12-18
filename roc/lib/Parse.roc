@@ -1,10 +1,12 @@
 interface Parse
     exposes [
         strFromUtf8,
-        i32,
-        i32FromUtf8,
-        dropLeft,
+        i64,
+        i64FromUtf8,
+        dropStart,
         intoTwo,
+        dropEnd,
+        pairs,
     ]
     imports []
 
@@ -13,15 +15,15 @@ strFromUtf8 = \bytes ->
         Ok str -> str
         _ -> crash "unable to parse str from utf8 bytes"
 
-i32 = \str ->
-    when Str.toI32 str is
+i64 = \str ->
+    when Str.toI64 str is
         Ok num -> num
         _ -> crash "unable to parse int: \(str)"
 
-i32FromUtf8 = \bytes ->
-    i32 (strFromUtf8 bytes)
+i64FromUtf8 = \bytes ->
+    i64 (strFromUtf8 bytes)
 
-dropLeft = \str, lead ->
+dropStart = \str, lead ->
     (left, right) = intoTwo str lead
     if
         left != ""
@@ -30,7 +32,23 @@ dropLeft = \str, lead ->
     else
         right
 
+dropEnd = \str, tail ->
+    (left, right) = intoTwo str tail
+    if
+        right != ""
+    then
+        crash "expected '\(tail)' at end of string: \(str)"
+    else
+        left
+
 intoTwo = \str, sep ->
     when Str.splitFirst str sep is
         Ok result -> (result.before, result.after)
         _ -> crash "separator '\(sep)' not found in string: \(str)"
+
+pairs = \list ->
+    { before, others } = List.split list 2
+    when before is
+        [a, b] -> List.concat [(a, b)] (pairs others)
+        [] -> []
+        _ -> crash "expected list to have an even length"

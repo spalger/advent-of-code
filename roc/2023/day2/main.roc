@@ -8,14 +8,14 @@ parseDraw = \draw ->
     |> List.map Str.trim
     |> List.walk (Dict.empty {}) \acc, cubeCount ->
         (num, color) = Parse.intoTwo cubeCount " "
-        Dict.insert acc color (Parse.i32 num)
+        Dict.insert acc color (Parse.i64 num)
 
 parseGame = \game ->
     (label, drawsStr) = Parse.intoTwo game ": "
     id =
         label
-        |> Parse.dropLeft "Game "
-        |> Parse.i32
+        |> Parse.dropStart "Game "
+        |> Parse.i64
 
     draws =
         drawsStr

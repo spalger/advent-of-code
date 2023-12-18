@@ -22,9 +22,9 @@ parseNums = \str ->
     |> Str.split " "
     |> List.map Str.trim
     |> List.dropIf Str.isEmpty
-    |> List.map Parse.i32
+    |> List.map Parse.i64
 
-Card : { count : Nat, winning : List I32, have : List I32 }
+Card : { count : Nat, winning : List i64, have : List i64 }
 parseCard : Str -> Card
 parseCard = \str ->
     (_, numbers) = Parse.intoTwo str ":"

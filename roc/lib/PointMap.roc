@@ -13,11 +13,11 @@ fromStr : Str -> PointMap
 fromStr = \str ->
     str
     |> Str.split "\n"
-    |> List.mapWithIndex \line, y -> ((Num.toI32 y), line)
+    |> List.mapWithIndex \line, y -> ((Num.toi64 y), line)
     |> List.joinMap \(y, line) ->
         line
         |> Str.toUtf8
-        |> List.mapWithIndex \char, x -> (((Num.toI32 x), y), char)
+        |> List.mapWithIndex \char, x -> (((Num.toi64 x), y), char)
     |> Dict.fromList
 
 expect
