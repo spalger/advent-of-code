@@ -26,31 +26,22 @@ export function maybeToInt(s: string) {
   return Number.isNaN(n) ? undefined : n
 }
 
-const factorCache = new Map<number, number[]>()
 /**
  * Produce a list of factors for n (the numbers which divide n evenly)
  */
 export function factors(n: number): number[] {
-  const cached = factorCache.get(n)
-  if (cached) {
-    return cached
-  }
-
-  const result: number[] = []
+  const factors: number[] = []
   const max = Math.sqrt(n)
   for (let i = 1; i <= max; i++) {
     if (n % i === 0) {
-      result.push(i)
-
+      factors.push(i)
       const pair = n / i
       if (i !== pair) {
-        result.push(pair)
+        factors.push(pair)
       }
     }
   }
-
-  factorCache.set(n, result)
-  return result
+  return factors
 }
 
 /**

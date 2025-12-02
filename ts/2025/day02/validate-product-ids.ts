@@ -1,7 +1,10 @@
 import { strictEqual } from 'assert'
 
+import { memoize } from '../../common/fn'
 import { factors, isOdd } from '../../common/number'
 import { getSum } from '../../common/big_int'
+
+const memoizedFactors = memoize(factors)
 
 function parse(input: string): [bigint, bigint][] {
   return input
@@ -62,7 +65,7 @@ function getIdsWithArbitraryRepeatingTermsBetween(
   const invalidIds: bigint[] = []
   for (let n = left; n <= right; n++) {
     const ns = String(n)
-    check: for (const factor of factors(ns.length)) {
+    check: for (const factor of memoizedFactors(ns.length)) {
       if (factor === ns.length) {
         continue
       }
