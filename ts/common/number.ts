@@ -2,6 +2,10 @@ export function bitsToInt(bits: number[]) {
   return binaryToInt(bits.join(''))
 }
 
+export function isOdd(n: number) {
+  return n % 2 !== 0
+}
+
 function checkNum(n: number, input: string, expected: string) {
   if (Number.isNaN(n)) {
     throw new Error(`string [${input}] can't be parsed as a ${expected}`)
@@ -20,6 +24,33 @@ export function toInt(s: string) {
 export function maybeToInt(s: string) {
   const n = parseInt(s, 10)
   return Number.isNaN(n) ? undefined : n
+}
+
+const factorCache = new Map<number, number[]>()
+/**
+ * Produce a list of factors for n (the numbers which divide n evenly)
+ */
+export function factors(n: number): number[] {
+  const cached = factorCache.get(n)
+  if (cached) {
+    return cached
+  }
+
+  const result: number[] = []
+  const max = Math.sqrt(n)
+  for (let i = 1; i <= max; i++) {
+    if (n % i === 0) {
+      result.push(i)
+
+      const pair = n / i
+      if (i !== pair) {
+        result.push(pair)
+      }
+    }
+  }
+
+  factorCache.set(n, result)
+  return result
 }
 
 /**
