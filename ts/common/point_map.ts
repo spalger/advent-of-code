@@ -238,4 +238,12 @@ export class PointMap<Ent> {
       point.y === this.maxY
     )
   }
+
+  update(point: Point, ent: Ent) {
+    const current = this.points.get(point)
+    if (current === undefined) {
+      throw new Error('point is not in map')
+    }
+    this.points.set(point, ent)
+  }
 }
