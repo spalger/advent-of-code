@@ -48,7 +48,6 @@ export function test() {
 }
 
 export function part1(input: string) {
-  console.log(parse(input))
   console.log('there are', countFreshItems(parse(input)), 'fresh items')
 }
 
