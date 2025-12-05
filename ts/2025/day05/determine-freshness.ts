@@ -1,4 +1,4 @@
-import { strictEqual } from 'assert'
+import { deepStrictEqual, strictEqual } from 'assert'
 import { toInt } from '../../common/number'
 import { reduceInclusiveIntRanges, toIntRange } from '../../common/ranges'
 import { dedent, toLines } from '../../common/string'
@@ -42,6 +42,11 @@ export function test() {
     17
     32
   `)
+
+  deepStrictEqual(inventory.ranges, [
+    [3, 5],
+    [10, 20],
+  ])
 
   strictEqual(countFreshItems(inventory), 3)
   strictEqual(countPossibleFreshItemsById(inventory), 14)

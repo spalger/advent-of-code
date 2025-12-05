@@ -11,7 +11,7 @@ export function toIntRange(string: string): [number, number] {
 /**
  * Reduce a set of possibly overlapping inclusive integer ranges to a minimal
  * set of non-overlapping ranges. Ranges are sorted as part of the reduction
- * process and will be returned in ascending order by start value.
+ * process and will be returned in ascending order by start value and size.
  *
  * @example
  * ```ts
@@ -32,16 +32,12 @@ export function reduceInclusiveIntRanges(ranges: readonly [number, number][]) {
   return ranges
     .toSorted((a, b) => a[0] - b[0])
     .reduce((acc, [start, end]): [number, number][] => {
-      const overlap = acc.findIndex(([a, b]) => !(end < a || start > b))
-      if (overlap === -1) {
-        return [...acc, [start, end]]
+      const prev = acc.at(-1)
+      if (prev && start <= prev[1]) {
+        prev[1] = Math.max(prev[1], end)
+        return acc
       }
 
-      const [a, b] = acc[overlap]
-      return [
-        ...acc.slice(0, overlap),
-        [Math.min(start, a), Math.max(end, b)],
-        ...acc.slice(overlap + 1),
-      ]
+      return [...acc, [start, end]]
     }, [] as [number, number][])
 }
