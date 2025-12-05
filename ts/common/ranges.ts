@@ -1,3 +1,13 @@
+import { toInt } from './number'
+
+/**
+ * Parse "int-int" as a pair of integer numbers representing a range.
+ */
+export function toIntRange(string: string): [number, number] {
+  const [start, end] = string.split('-').map(toInt)
+  return [start, end]
+}
+
 /**
  * Reduce a set of possibly overlapping inclusive integer ranges to a minimal
  * set of non-overlapping ranges. Ranges are sorted as part of the reduction

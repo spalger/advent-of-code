@@ -1,6 +1,6 @@
 import { strictEqual } from 'assert'
 import { toInt } from '../../common/number'
-import { reduceInclusiveIntRanges } from '../../common/ranges'
+import { reduceInclusiveIntRanges, toIntRange } from '../../common/ranges'
 import { dedent, toLines } from '../../common/string'
 
 type Inventory = {
@@ -10,16 +10,11 @@ type Inventory = {
 
 function parse(input: string): Inventory {
   const [rangesChunk, itemsChunk] = input.split('\n\n')
-  const ranges = reduceInclusiveIntRanges(
-    toLines(rangesChunk).map((l) => {
-      const [start, end] = l.split('-').map(toInt)
-      return [start, end] as const
-    }),
-  )
 
-  const items = toLines(itemsChunk).map(toInt)
-
-  return { ranges, items }
+  return {
+    ranges: reduceInclusiveIntRanges(toLines(rangesChunk).map(toIntRange)),
+    items: toLines(itemsChunk).map(toInt),
+  }
 }
 
 function countFreshItems({ ranges, items }: Inventory) {
