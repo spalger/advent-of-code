@@ -3,6 +3,15 @@ import { repeat } from './array'
 import { toLines } from './string'
 
 export class PointMap<Ent> {
+  static fromStringOf<T extends string>(input: string, entTypes: T[]) {
+    return PointMap.fromString<T>(input, (ent) => {
+      if (entTypes.includes(ent as T)) {
+        return ent as T
+      }
+      throw new Error(`Invalid entity type: ${ent}`)
+    })
+  }
+
   static fromString<T = string>(
     input: string,
     map?: (ent: string, point: Point) => T,
@@ -129,6 +138,33 @@ export class PointMap<Ent> {
       }
     }
     return subset
+  }
+
+  find(test: (ent: Ent, point: Point) => boolean): Point | undefined {
+    for (const [point, ent] of this.points) {
+      if (test(ent, point)) {
+        return point
+      }
+    }
+
+    return undefined
+  }
+
+  first(test: (ent: Ent, point: Point) => boolean) {
+    const found = this.find(test)
+    if (found) return found
+    throw new Error('No matching entity found')
+  }
+
+  row(y: number): Array<[Point, Ent]> {
+    if (y < this.minY || y > this.maxY) {
+      throw new Error('row is outside of map')
+    }
+
+    return Array.from({ length: this.maxX - this.minX + 1 }, (_, x) => {
+      const point = p(x + this.minX, y)
+      return [point, this.get(point)]
+    })
   }
 
   neighbors(p: Point) {

@@ -1,3 +1,5 @@
+import { getSum } from './number'
+
 /**
  * Wrapper around map which makes it more useful for counting things. Rather than
  * a set() method it has an add() function which adds some amount to the specified
@@ -47,6 +49,13 @@ export class CountMap<T> {
    */
   get size() {
     return this.map.size
+  }
+
+  /**
+   * Get the sum of the values in the CountMap
+   */
+  sum() {
+    return getSum(Array.from(this.map.values()))
   }
 
   /**
