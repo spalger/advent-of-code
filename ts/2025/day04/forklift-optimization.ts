@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
 import { dedent } from '../../common/string.ts'
 import { PointMap } from '../../common/point_map.ts'
-import { Point } from '../../common/point.ts'
+import { type Point } from '../../common/point.ts'
 
 function parse(input: string) {
   return PointMap.fromString<boolean>(input, (ent) => ent === '@')

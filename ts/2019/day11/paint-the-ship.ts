@@ -5,7 +5,7 @@ import {
   InputReq,
   Output,
 } from '../../common/intcode-computer.ts'
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 
 function paintHull(code: string, startOnWhite = false) {
   let pos = p(0, 0)

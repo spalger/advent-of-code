@@ -1,6 +1,6 @@
 import { strictEqual } from 'assert'
 
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { repeat, intersect } from '../../common/array.ts'
 
 const ORIGIN = p(0, 0)

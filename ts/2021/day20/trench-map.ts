@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
 
 import { toLines } from '../../common/string.ts'
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { bitsToInt } from '../../common/number.ts'
 
 type Bit = 1 | 0

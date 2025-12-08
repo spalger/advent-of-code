@@ -1,9 +1,9 @@
 import { deepStrictEqual } from 'assert'
 
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { dedent } from '../../common/string.ts'
 import { shift } from '../../common/array.ts'
-import { MazeGraph, Node } from '../../common/maze_graph.ts'
+import { MazeGraph, type Node } from '../../common/maze_graph.ts'
 import { PointMap } from '../../common/point_map.ts'
 
 class Key {

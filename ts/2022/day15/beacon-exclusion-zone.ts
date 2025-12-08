@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
 import { toLines } from '../../common/string.ts'
 import { toInt } from '../../common/number.ts'
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { last } from '../../common/array.ts'
 
 const SENSOR_READING_RE =

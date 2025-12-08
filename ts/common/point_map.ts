@@ -1,4 +1,4 @@
-import { p, Point } from './point.ts'
+import { p, type Point } from './point.ts'
 import { repeat } from './array.ts'
 import { toLines } from './string.ts'
 

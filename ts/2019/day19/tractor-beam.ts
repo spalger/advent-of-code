@@ -1,6 +1,6 @@
 import { runIntCode } from '../../common/intcode-computer.ts'
 import { PointMap } from '../../common/point_map.ts'
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { memoize } from '../../common/fn.ts'
 import chalk from 'chalk'
 

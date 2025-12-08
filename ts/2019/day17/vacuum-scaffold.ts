@@ -1,5 +1,5 @@
 import { runIntCode, parseIntCode } from '../../common/intcode-computer.ts'
-import { Point, p } from '../../common/point.ts'
+import { type Point, p } from '../../common/point.ts'
 import { toLines } from '../../common/string.ts'
 import { shift } from '../../common/array.ts'
 

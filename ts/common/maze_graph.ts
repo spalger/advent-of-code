@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import stripAnsi from 'strip-ansi'
 
 import { PointMap } from './point_map.ts'
-import { Point } from './point.ts'
+import { type Point } from './point.ts'
 import { shift, last } from './array.ts'
 
 const colors = [

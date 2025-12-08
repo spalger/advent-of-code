@@ -1,5 +1,5 @@
 import { strictEqual } from 'assert'
-import { p, HexPoint } from './point.ts'
+import { p, type HexPoint } from './point.ts'
 import { dedent } from '../../common//string.ts'
 
 type Dir = 'e' | 'se' | 'sw' | 'w' | 'nw' | 'ne'

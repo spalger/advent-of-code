@@ -1,5 +1,5 @@
 import { strictEqual } from 'assert'
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { PointMap } from '../../common/point_map.ts'
 import { toInt } from '../../common/number.ts'
 

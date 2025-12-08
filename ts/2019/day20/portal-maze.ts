@@ -3,8 +3,8 @@ import * as Fs from 'fs'
 import * as Path from 'path'
 
 import { PointMap } from '../../common/point_map.ts'
-import { MazeGraph, Node } from '../../common/maze_graph.ts'
-import { Point } from '../../common/point.ts'
+import { MazeGraph, type Node } from '../../common/maze_graph.ts'
+import { type Point } from '../../common/point.ts'
 import { shift } from '../../common/array.ts'
 import { memoize } from '../../common/fn.ts'
 

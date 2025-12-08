@@ -2,7 +2,7 @@ import { strictEqual } from 'assert'
 
 import { dedent } from '../../common/string.ts'
 import { PointMap } from '../../common/point_map.ts'
-import { Point } from '../../common/point.ts'
+import { type Point } from '../../common/point.ts'
 import { toInt } from '../../common/number.ts'
 
 type DepthMap = PointMap<number>

@@ -2,7 +2,7 @@ import { strictEqual } from 'assert'
 
 import { dedent, toLines } from '../../common/string.ts'
 import { toInt } from '../../common/number.ts'
-import { Point, p } from '../../common/point.ts'
+import { type Point, p } from '../../common/point.ts'
 
 type Points = Set<Point>
 type Folder = (points: Points, n: number) => Points

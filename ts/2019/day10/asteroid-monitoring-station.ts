@@ -1,6 +1,6 @@
 import { strictEqual, deepStrictEqual } from 'assert'
 
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { toLines, dedent } from '../../common/string.ts'
 import { shift } from '../../common/array.ts'
 

@@ -1,7 +1,7 @@
 import { intCodeTick, State } from '../../common/intcode-computer.ts'
-import { p, Point } from '../../common/point.ts'
+import { p, type Point } from '../../common/point.ts'
 import { shift } from '../../common/array.ts'
-import { ElementType } from '../../common/ts.ts'
+import { type ElementType } from '../../common/ts.ts'
 
 type Entity = '#' | '.' | 'O' | 'S'
 type Room = Map<Point, Entity>
