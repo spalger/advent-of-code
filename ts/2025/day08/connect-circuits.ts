@@ -10,96 +10,72 @@ function parse(input: string) {
   })
 }
 
-type Edge = [Point3d, Point3d] & { __edgeBrand: void }
+type Edge = [Point3d, Point3d, number] & { __edgeBrand: void }
 const edgeCache = new Map<string, Edge>()
-function getEdge(a: Point3d, b: Point3d) {
-  const fresh = [a, b] as Edge
-  const key = fresh
-    .map((p) => p.toString())
-    .sort()
-    .join('->')
+function getEdge(a: Point3d, b: Point3d): Edge {
+  const key = [a.key, b.key].sort().join('->')
 
   const cached = edgeCache.get(key)
   if (cached) return cached
 
+  const fresh = [a, b, a.straightDist(b)] as Edge
   edgeCache.set(key, fresh)
   return fresh
 }
 
-class Circuit {
-  #points: Set<Point3d> = new Set()
-
-  constructor(edge: Edge) {
-    this.add(edge)
-  }
-
-  add(edge: Edge) {
-    this.#points.add(edge[0])
-    this.#points.add(edge[1])
-  }
-
-  has(point: Point3d) {
-    return this.#points.has(point)
-  }
-
-  merge(other: Circuit) {
-    for (const point of other.#points) {
-      this.#points.add(point)
-    }
-  }
-
-  get size() {
-    return this.#points.size
-  }
+function add(circuit: Circuit, edge: Edge) {
+  circuit.add(edge[0])
+  circuit.add(edge[1])
+  return circuit
 }
 
-function connect(
-  points: Point3d[],
-  shouldStop: (i: number, circuits: Circuit[]) => boolean,
-) {
-  const distances = new Map<Edge, number>()
+type Circuit = Set<Point3d>
+function connect(points: Point3d[], { first }: { first?: number } = {}) {
+  const edges = new Set<Edge>()
   for (const point of points) {
     for (const otherPoint of points) {
       if (point === otherPoint) continue
-
-      const edge = getEdge(point, otherPoint)
-      distances.set(edge, point.straightDist(otherPoint))
+      edges.add(getEdge(point, otherPoint))
     }
   }
 
-  const sorted = Array.from(distances.entries()).sort((a, b) => a[1] - b[1])
+  const sorted = Array.from(edges)
+    .sort((a, b) => a[2] - b[2])
+    .slice(0, first ?? edges.size)
+
   const circuits: Circuit[] = []
-  let i = 0
-  for (; !shouldStop(i, circuits); i++) {
-    const [edge] = sorted[i]
+  let lastEdge: Edge | null = null
+  for (const edge of sorted) {
+    lastEdge = edge
     const existingA = circuits.find((circuit) => circuit.has(edge[0]))
     const existingB = circuits.find((circuit) => circuit.has(edge[1]))
 
     if (existingA && existingA === existingB) {
-      continue
-    }
-
-    if (existingA && existingB) {
+      // noop
+    } else if (existingA && existingB) {
       circuits.splice(circuits.indexOf(existingB), 1)
-      existingA.add(edge)
-      existingA.merge(existingB)
-      continue
+      add(existingA, edge)
+      for (const point of existingB) {
+        existingA.add(point)
+      }
+    } else if (existingA) {
+      add(existingA, edge)
+    } else if (existingB) {
+      add(existingB, edge)
+    } else {
+      circuits.push(add(new Set(), edge))
     }
 
-    if (existingA) {
-      existingA.add(edge)
-      continue
+    if (circuits.length === 1 && circuits[0].size === points.length) {
+      break // all junctions have been connected into a single circuit
     }
-
-    if (existingB) {
-      existingB.add(edge)
-      continue
-    }
-
-    circuits.push(new Circuit(edge))
   }
 
-  return { circuits, last: sorted[i - 1][0] }
+  if (!lastEdge) {
+    throw new Error('no edges were connected')
+  }
+
+  return { circuits, last: lastEdge }
 }
 
 function multiplyLargestCircuits(circuits: Circuit[], count: number) {
@@ -134,19 +110,16 @@ export function test() {
   `)
 
   strictEqual(
-    multiplyLargestCircuits(connect(points, (i) => i >= 10).circuits, 3),
+    multiplyLargestCircuits(connect(points, { first: 10 }).circuits, 3),
     40,
   )
 
-  const t2 = connect(
-    points,
-    (_, circuits) => circuits.length === 1 && circuits[0].size >= points.length,
-  )
+  const t2 = connect(points)
   strictEqual(t2.last[0].x * t2.last[1].x, 25272)
 }
 
 export function part1(input: string) {
-  const { circuits } = connect(parse(input), (i) => i >= 1000)
+  const { circuits } = connect(parse(input), { first: 1000 })
   console.log(
     'the product of the length of the three largest circuits is',
     multiplyLargestCircuits(circuits, 3),
@@ -154,18 +127,14 @@ export function part1(input: string) {
 }
 
 export function part2(input: string) {
-  const { last } = connect(
-    parse(input),
-    (_, circuits) => circuits.length === 1 && circuits[0].size >= 1000,
-  )
+  const { last } = connect(parse(input))
 
   console.log(
     'the last connection made was between',
     last[0],
     'and',
     last[1],
-    '(product = ',
+    'product =',
     last[0].x * last[1].x,
-    ')',
   )
 }
