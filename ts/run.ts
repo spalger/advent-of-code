@@ -77,11 +77,6 @@ function exec(name: string, fn: (input?: string) => void, input?: string) {
 }
 
 const flags = await yargs(hideBin(process.argv))
-  .positional('selector', {
-    type: 'string',
-    description: 'year/day/solution selector',
-    default: '.',
-  })
   .option('test', {
     type: 'boolean',
     alias: 't',
@@ -96,7 +91,7 @@ const flags = await yargs(hideBin(process.argv))
   })
   .parse()
 
-const selector = relnorm(Path.resolve(flags.selector))
+const selector = relnorm(Path.resolve(`${flags._[0] || '.'}`))
 const [yearSelector, daySelector, solutionSelector] = selector
   .split('/')
   .map((input) => {
