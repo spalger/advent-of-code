@@ -68,12 +68,57 @@ function formatTime(ms: number): string {
   return `${Math.floor(ms / MINUTE)}min ${formatTime(ms % MINUTE)}`
 }
 
-function exec(name: string, fn: (input?: string) => void, input?: string) {
+function exec(
+  name: string,
+  iterations: number,
+  fn: (input?: string) => void,
+  input?: string,
+) {
   console.log(chalk.grey(name))
   const start = performance.now()
-  fn(input)
+
+  let cleanup = () => {}
+  if (iterations > 1) {
+    console.log(chalk.grey(`  running ${iterations} iterations...`))
+    const original = globalThis.console
+    Object.assign(globalThis, {
+      console: { log: () => {}, dir: () => {}, warn: () => {}, info: () => {} },
+    })
+    cleanup = () => {
+      Object.assign(globalThis, { console: original })
+    }
+  }
+
+  let min: number | undefined = undefined
+  let max: number | undefined = undefined
+  for (let i = 0; i < iterations; i++) {
+    const iterStart = performance.now()
+    fn(input)
+    const iterEnd = performance.now()
+    const iterTime = iterEnd - iterStart
+    if (min === undefined || iterTime < min) {
+      min = iterTime
+    }
+    if (max === undefined || iterTime > max) {
+      max = iterTime
+    }
+  }
+
+  cleanup()
   const end = performance.now()
-  console.log(`${chalk.grey(`took ${formatTime(end - start)}`)}\n`)
+  if (iterations > 1) {
+    console.log(
+      chalk.grey(
+        `  ${iterations} iterations, min: ${formatTime(
+          min!,
+        )}, max: ${formatTime(max!)}, avg: ${formatTime(
+          (end - start) / iterations,
+        )}`,
+      ),
+    )
+  } else {
+    console.log(`${chalk.grey(`took ${formatTime(end - start)}`)}\n`)
+  }
 }
 
 const flags = await yargs(hideBin(process.argv))
@@ -88,6 +133,12 @@ const flags = await yargs(hideBin(process.argv))
     alias: 'p',
     description: 'Run a specific part only (1 or 2)',
     default: '',
+  })
+  .option('iterations', {
+    type: 'number',
+    alias: 'i',
+    description: 'Number of iterations to run for benchmarking',
+    default: 1,
   })
   .parse()
 
@@ -148,16 +199,21 @@ for (const { dir, year, day } of selectedDays) {
     for (const task of tasks) {
       switch (task) {
         case 'test':
-          exec(`test(${solution}${testInDesc}):`, test, testInput)
+          exec(
+            `test(${solution}${testInDesc}):`,
+            flags.iterations,
+            test,
+            testInput,
+          )
           break
         case 'part1':
-          exec(`part1(${solution}${inDesc})`, part1, input)
+          exec(`part1(${solution}${inDesc})`, flags.iterations, part1, input)
           break
         case 'part2':
-          exec(`part2(${solution}${inDesc})`, part2, input)
+          exec(`part2(${solution}${inDesc})`, flags.iterations, part2, input)
           break
         case 'run':
-          exec(`run(${solution}${inDesc})`, run, input)
+          exec(`run(${solution}${inDesc})`, flags.iterations, run, input)
           break
         default:
           throw new Error(`unexpected task [${task}]`)

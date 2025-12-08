@@ -15,6 +15,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-extra-semi': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/consistent-type-imports': [
       'error',
       { fixStyle: 'inline-type-imports', prefer: 'type-imports' },
