@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
 
-import { runBigIntCode } from '../../common/intcode-computer'
+import { runBigIntCode } from '../../common/intcode-computer.ts'
 
 export function test() {
   deepStrictEqual(

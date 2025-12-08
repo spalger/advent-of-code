@@ -1,10 +1,10 @@
 import { strictEqual } from 'assert'
-import { PointMap } from '../../common/point_map'
-import { dedent } from '../../common/string'
-import { p } from '../../common/point'
-import { CountMap } from '../../common/count_map'
-import { memoize } from '../../common/fn'
-import { toInt } from '../../common/number'
+import { PointMap } from '../../common/point_map.ts'
+import { dedent } from '../../common/string.ts'
+import { p } from '../../common/point.ts'
+import { CountMap } from '../../common/count_map.ts'
+import { memoize } from '../../common/fn.ts'
+import { toInt } from '../../common/number.ts'
 
 type Row = Set<number> & { __rowBrand: true }
 type State = CountMap<Row>

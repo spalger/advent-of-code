@@ -1,5 +1,5 @@
-import { toInt } from './number'
-import { shift } from './array'
+import { toInt } from './number.ts'
+import { shift } from './array.ts'
 
 const paramCounts = new Map([
   [1, 3],
@@ -108,13 +108,24 @@ export class State {
     )
   }
 
+  private readonly mem: IntSource
+  public readonly input: bigint[] = []
+  private i = 0n
+  public relativeBase = 0n
+  public readonly outputLog: bigint[] = []
   private constructor(
-    private readonly mem: IntSource,
-    public readonly input: bigint[] = [],
-    private i: bigint = 0n,
-    public relativeBase: bigint = 0n,
-    public readonly outputLog: bigint[] = [],
-  ) {}
+    mem: IntSource,
+    input: bigint[] = [],
+    i = 0n,
+    relativeBase = 0n,
+    outputLog: bigint[] = [],
+  ) {
+    this.mem = mem
+    this.input = input
+    this.i = i
+    this.relativeBase = relativeBase
+    this.outputLog = outputLog
+  }
 
   private _op: Op | undefined
   op() {

@@ -1,9 +1,9 @@
 import { strictEqual } from 'assert'
 
-import { dedent } from '../../common/string'
-import { PointMap } from '../../common/point_map'
-import { toInt } from '../../common/number'
-import { p, Point } from '../../common/point'
+import { dedent } from '../../common/string.ts'
+import { PointMap } from '../../common/point_map.ts'
+import { toInt } from '../../common/number.ts'
+import { p, Point } from '../../common/point.ts'
 
 class Cavern {
   static fromString(input: string) {

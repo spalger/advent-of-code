@@ -1,7 +1,7 @@
 import { deepStrictEqual } from 'assert'
 
-import { repeat } from '../../common/array'
-import { toInt } from '../../common/number'
+import { repeat } from '../../common/array.ts'
+import { toInt } from '../../common/number.ts'
 
 const onesDigit = (n: number) => Math.abs(n % 10)
 

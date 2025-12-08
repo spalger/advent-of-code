@@ -1,6 +1,6 @@
 import { strictEqual } from 'assert'
-import { getSum, toInt } from '../../common/number'
-import { dedent, toLines } from '../../common/string'
+import { getSum, toInt } from '../../common/number.ts'
+import { dedent, toLines } from '../../common/string.ts'
 
 type Problem = {
   sign: '+' | '*'

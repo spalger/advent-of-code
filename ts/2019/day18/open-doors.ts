@@ -1,10 +1,10 @@
 import { deepStrictEqual } from 'assert'
 
-import { p, Point } from '../../common/point'
-import { dedent } from '../../common/string'
-import { shift } from '../../common/array'
-import { MazeGraph, Node } from '../../common/maze_graph'
-import { PointMap } from '../../common/point_map'
+import { p, Point } from '../../common/point.ts'
+import { dedent } from '../../common/string.ts'
+import { shift } from '../../common/array.ts'
+import { MazeGraph, Node } from '../../common/maze_graph.ts'
+import { PointMap } from '../../common/point_map.ts'
 
 class Key {
   constructor(public readonly name: string, public readonly door: string) {}

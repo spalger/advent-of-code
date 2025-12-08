@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "ESNext",
-    "module": "CommonJS",
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+    "allowArbitraryExtensions": false,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "lib": [
       "ESNext"

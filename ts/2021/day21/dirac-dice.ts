@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
 
-import { CountMap } from '../../common/count_map'
+import { CountMap } from '../../common/count_map.ts'
 
 type StartPositions = [number, number]
 type PlayerState = { pos: number; score: number }

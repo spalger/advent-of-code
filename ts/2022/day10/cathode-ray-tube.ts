@@ -1,7 +1,7 @@
 import { deepEqual } from 'assert'
-import { dedent, toLines } from '../../common/string'
-import { toInt } from '../../common/number'
-import { repeat } from '../../common/array'
+import { dedent, toLines } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
+import { repeat } from '../../common/array.ts'
 
 type Prog = Array<'noop' | number>
 

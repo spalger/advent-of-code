@@ -1,4 +1,4 @@
-import { getSum } from './number'
+import { getSum } from './number.ts'
 
 /**
  * Wrapper around map which makes it more useful for counting things. Rather than

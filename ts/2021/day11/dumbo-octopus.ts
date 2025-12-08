@@ -1,9 +1,9 @@
 import { strictEqual } from 'assert'
 
-import { dedent } from '../../common/string'
-import { PointMap } from '../../common/point_map'
-import { Point } from '../../common/point'
-import { toInt } from '../../common/number'
+import { dedent } from '../../common/string.ts'
+import { PointMap } from '../../common/point_map.ts'
+import { Point } from '../../common/point.ts'
+import { toInt } from '../../common/number.ts'
 
 type OctoMap = PointMap<number>
 function parse(input: string): OctoMap {

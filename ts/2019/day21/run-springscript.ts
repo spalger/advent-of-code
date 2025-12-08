@@ -1,5 +1,5 @@
-import { runIntCode } from '../../common/intcode-computer'
-import { last } from '../../common/array'
+import { runIntCode } from '../../common/intcode-computer.ts'
+import { last } from '../../common/array.ts'
 
 function runSpringscript(interpreter: string, prog: string[]): number | string {
   if (prog.length > 16) {

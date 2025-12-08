@@ -1,4 +1,4 @@
-import { toInt } from '../../common/number'
+import { toInt } from '../../common/number.ts'
 
 function fishGame(startingAges: number[], days: number) {
   const fish = new Array(9).fill(0)

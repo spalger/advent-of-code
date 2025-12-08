@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
 
-import { dedent } from '../../common/string'
-import { maybeToInt, getMax, getSum } from '../../common/number'
+import { dedent } from '../../common/string.ts'
+import { maybeToInt, getMax, getSum } from '../../common/number.ts'
 
 function getCalorieSums(list: Array<undefined | number>) {
   return list.reduce(

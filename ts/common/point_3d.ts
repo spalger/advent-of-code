@@ -29,11 +29,13 @@ export class Point3d {
   }
 
   public key: string
-  constructor(
-    public readonly x: number,
-    public readonly y: number,
-    public readonly z: number,
-  ) {
+  public readonly x: number
+  public readonly y: number
+  public readonly z: number
+  constructor(x: number, y: number, z: number) {
+    this.x = x
+    this.y = y
+    this.z = z
     this.key = `(${this.x},${this.y},${this.z})`
   }
 

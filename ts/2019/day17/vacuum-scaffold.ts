@@ -1,7 +1,7 @@
-import { runIntCode, parseIntCode } from '../../common/intcode-computer'
-import { Point, p } from '../../common/point'
-import { toLines } from '../../common/string'
-import { shift } from '../../common/array'
+import { runIntCode, parseIntCode } from '../../common/intcode-computer.ts'
+import { Point, p } from '../../common/point.ts'
+import { toLines } from '../../common/string.ts'
+import { shift } from '../../common/array.ts'
 
 function parseMap(source: string) {
   const output = runIntCode(source, [])

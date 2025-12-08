@@ -5,8 +5,8 @@ import {
   InputReq,
   Output,
 } from '../../common/intcode-computer'
-import { p, Point } from '../../common/point'
-import { ElementType } from '../../common/ts'
+import { p, Point } from '../../common/point.ts'
+import { ElementType } from '../../common/ts.ts'
 
 const entityMap = [
   'empty',

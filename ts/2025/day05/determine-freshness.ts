@@ -1,7 +1,7 @@
 import { deepStrictEqual, strictEqual } from 'assert'
-import { toInt } from '../../common/number'
-import { reduceInclusiveIntRanges, toIntRange } from '../../common/ranges'
-import { dedent, toLines } from '../../common/string'
+import { toInt } from '../../common/number.ts'
+import { reduceInclusiveIntRanges, toIntRange } from '../../common/ranges.ts'
+import { dedent, toLines } from '../../common/string.ts'
 
 type Inventory = {
   ranges: Array<readonly [number, number]>

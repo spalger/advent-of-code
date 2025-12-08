@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
 
-import { dedent, toLines } from '../../common/string'
-import { toInt } from '../../common/number'
+import { dedent, toLines } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
 
 function parse(input: string): number[] {
   return toLines(input).map((l) => {

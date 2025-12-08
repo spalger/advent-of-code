@@ -1,8 +1,8 @@
 import { strictEqual } from 'assert'
-import { dedent, toLines } from '../../common/string'
-import { p, Point } from '../../common/point'
-import { PointMap } from '../../common/point_map'
-import { toInt } from '../../common/number'
+import { dedent, toLines } from '../../common/string.ts'
+import { p, Point } from '../../common/point.ts'
+import { PointMap } from '../../common/point_map.ts'
+import { toInt } from '../../common/number.ts'
 
 const DEBUG = false
 const DIRS = {

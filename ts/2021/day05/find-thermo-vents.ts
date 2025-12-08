@@ -1,6 +1,6 @@
-import { toLines, dedent } from '../../common/string'
-import { toInt } from '../../common/number'
-import { p, Point } from '../../common/point'
+import { toLines, dedent } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
+import { p, Point } from '../../common/point.ts'
 
 type Line = VerticalLine | HorizontalLine | DiagonalLine
 

@@ -1,25 +1,16 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+import { performance } from 'perf_hooks'
+import Path from 'path'
+import Fs from 'fs'
+import chalk from 'chalk'
+import { getopts } from 'getopts'
 
-const { performance } = require('perf_hooks')
-const Path = require('path')
-const Fs = require('fs')
-const chalk = require('chalk')
-const getopts = require('getopts')
-
-const norm = (path) => path.split(Path.sep).join('/')
-const relnorm = (path) => norm(Path.relative(__dirname, path))
-
-require('@babel/register')({
-  cwd: __dirname,
-  extensions: ['.js', '.ts'],
-  cache: true,
-  babelrc: false,
-})
+const norm = (path: string) => path.split(Path.sep).join('/')
+const relnorm = (path: string) => norm(Path.relative(__dirname, path))
 
 const allDays = Fs.readdirSync(__dirname)
   .filter((n) => /^\d\d\d\d$/.test(n))
   .reduce(
-    (acc, year) => [
+    (acc: { dir: string; year: number; day: number }[], year) => [
       ...acc,
       ...Fs.readdirSync(Path.resolve(__dirname, year))
         .filter((n) => /^day\d\d$/.test(n))
@@ -33,27 +24,39 @@ const allDays = Fs.readdirSync(__dirname)
   )
   .sort((a, b) => a.year - b.year || a.day - b.day)
 
-function isSolutionModule(path) {
-  const module = require(path)
-  return (
+async function isSolutionModule(path: string) {
+  const module = await import(path)
+  return !!(
     module &&
     typeof (module.run || module.test || module.part1 || module.part2) ===
       'function'
   )
 }
 
-function getSolutions(dir, solutionFilter) {
-  return Fs.readdirSync(dir).filter(
-    (n) =>
-      ['.js', '.ts'].includes(Path.extname(n)) &&
-      isSolutionModule(Path.resolve(dir, n)) &&
-      (solutionFilter ? n.startsWith(solutionFilter) : true),
-  )
+async function getSolutions(
+  dir: string,
+  solutionFilter?: string | number | undefined,
+) {
+  return (
+    await Promise.all(
+      Fs.readdirSync(dir).map(async (n) => {
+        if (
+          ['.js', '.ts'].includes(Path.extname(n)) &&
+          (await isSolutionModule(Path.resolve(dir, n))) &&
+          (typeof solutionFilter !== 'string' || n.startsWith(solutionFilter))
+        ) {
+          return [n]
+        }
+
+        return []
+      }),
+    )
+  ).flat()
 }
 
 const SECOND = 1000
 const MINUTE = SECOND * 60
-function formatTime(ms) {
+function formatTime(ms: number): string {
   if (ms < SECOND) {
     return `${ms.toFixed(1)}ms`
   }
@@ -63,7 +66,7 @@ function formatTime(ms) {
   return `${Math.floor(ms / MINUTE)}min ${formatTime(ms % MINUTE)}`
 }
 
-function exec(name, fn, input) {
+function exec(name: string, fn: (input?: string) => void, input?: string) {
   console.log(chalk.grey(name))
   const start = performance.now()
   fn(input)
@@ -102,9 +105,9 @@ if (!selectedDays.length) {
 for (const { dir, year, day } of selectedDays) {
   console.log(chalk.bgGreen.red.bold(` [${year}] day ${day}: `))
 
-  for (const solution of getSolutions(dir, solutionSelector)) {
+  for (const solution of await getSolutions(dir, solutionSelector)) {
     const path = Path.resolve(dir, solution)
-    const { test, run, part1, part2 } = require(path)
+    const { test, run, part1, part2 } = await import(path)
 
     // determine what we're going to do
     const tasks = []

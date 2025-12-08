@@ -1,8 +1,8 @@
 import { strictEqual } from 'assert'
 
-import { toLines } from '../../common/string'
-import { toInt } from '../../common/number'
-import { Point3d } from '../../common/point_3d'
+import { toLines } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
+import { Point3d } from '../../common/point_3d.ts'
 
 type Transform = (p: Point3d) => Point3d
 type Rotation = { name: string; transform: Transform }
@@ -47,11 +47,14 @@ class Report {
     return reports
   }
 
-  constructor(
-    public name: string,
-    public beacons: Point3d[],
-    public from: Point3d,
-  ) {}
+  public name: string
+  public beacons: Point3d[]
+  public from: Point3d
+  constructor(name: string, beacons: Point3d[], from: Point3d) {
+    this.name = name
+    this.beacons = beacons
+    this.from = from
+  }
 
   /**
    * Find a transformation of `other` that matches at least 12 beacons in `this` report by

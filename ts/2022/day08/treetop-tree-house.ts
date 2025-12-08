@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
-import { dedent } from '../../common/string'
-import { toInt } from '../../common/number'
-import { Point, p } from '../../common/point'
-import { PointMap } from '../../common/point_map'
+import { dedent } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
+import { Point, p } from '../../common/point.ts'
+import { PointMap } from '../../common/point_map.ts'
 
 type Trees = PointMap<number>
 

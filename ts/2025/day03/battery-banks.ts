@@ -1,6 +1,6 @@
 import { strictEqual } from 'assert'
-import { getMax, toInt } from '../../common/number'
-import { dedent, toLines } from '../../common/string'
+import { getMax, toInt } from '../../common/number.ts'
+import { dedent, toLines } from '../../common/string.ts'
 
 function parse(input: string) {
   return toLines(input).map((line) => line.split('').map(toInt))

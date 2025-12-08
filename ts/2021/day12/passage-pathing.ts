@@ -1,5 +1,5 @@
 import { strictEqual } from 'assert'
-import { dedent, toLines } from '../../common/string'
+import { dedent, toLines } from '../../common/string.ts'
 
 type Connections = Map<string, string[]>
 

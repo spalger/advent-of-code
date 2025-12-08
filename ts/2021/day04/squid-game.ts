@@ -1,5 +1,5 @@
-import { dedent } from '../../common/string'
-import { toInt } from '../../common/number'
+import { dedent } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
 
 class SquidGame {
   static parse(input: string) {

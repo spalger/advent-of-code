@@ -2,8 +2,8 @@ import { deepStrictEqual } from 'assert'
 
 import chalk from 'chalk'
 
-import { dedent } from '../../common/string'
-import { toInt } from '../../common/number'
+import { dedent } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
 
 function wrap(arr: number[], width: number) {
   if (arr.length % width !== 0) {

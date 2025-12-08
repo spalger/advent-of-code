@@ -1,4 +1,4 @@
-import { gcf } from './number'
+import { gcf } from './number.ts'
 
 const pointCache = new Map<number, Map<number, Point>>()
 
@@ -17,7 +17,12 @@ export const p = (x: number, y: number) => {
 }
 
 export class Point {
-  constructor(public readonly x: number, public readonly y: number) {}
+  public readonly x: number
+  public readonly y: number
+  constructor(x: number, y: number) {
+    this.x = x
+    this.y = y
+  }
 
   left(delta = 1) {
     return p(this.x - delta, this.y)

@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
-import { toLines } from '../../common/string'
-import { shift } from '../../common/array'
+import { toLines } from '../../common/string.ts'
+import { shift } from '../../common/array.ts'
 
 type Packet = Array<number | Packet>
 type Pairs = [Packet, Packet][]

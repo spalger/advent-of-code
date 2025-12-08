@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
-import { dedent } from '../../common/string'
-import { PointMap } from '../../common/point_map'
-import { Point } from '../../common/point'
-import { shift } from '../../common/array'
+import { dedent } from '../../common/string.ts'
+import { PointMap } from '../../common/point_map.ts'
+import { Point } from '../../common/point.ts'
+import { shift } from '../../common/array.ts'
 
 function aToN(char: string) {
   return char.charCodeAt(0) - 97

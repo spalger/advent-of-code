@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
-import { toLines, dedent } from '../../common/string'
-import { binaryToInt } from '../../common/number'
+import { toLines, dedent } from '../../common/string.ts'
+import { binaryToInt } from '../../common/number.ts'
 
 function getMostCommon(input: string[], i: number) {
   const half = input.length / 2

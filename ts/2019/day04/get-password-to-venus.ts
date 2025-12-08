@@ -1,4 +1,4 @@
-import { repeat } from '../../common/array'
+import { repeat } from '../../common/array.ts'
 /**
  * a few key facts about the password:
  *

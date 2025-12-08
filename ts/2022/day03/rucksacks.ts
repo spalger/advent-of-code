@@ -1,7 +1,7 @@
 import { deepStrictEqual } from 'assert'
-import { intersect } from '../../common/array'
-import { toLines, dedent } from '../../common/string'
-import { getSum } from '../../common/number'
+import { intersect } from '../../common/array.ts'
+import { toLines, dedent } from '../../common/string.ts'
+import { getSum } from '../../common/number.ts'
 
 const priority = (char: string) => {
   const code = char.charCodeAt(0)

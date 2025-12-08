@@ -1,4 +1,4 @@
-import { intersection } from './set'
+import { intersection } from './set.ts'
 
 export function repeat<T>(n: number, map: (i: number) => T) {
   const result = []

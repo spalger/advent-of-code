@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
-import { p, Point } from '../../common/point'
-import { PointMap } from '../../common/point_map'
-import { toInt } from '../../common/number'
+import { p, Point } from '../../common/point.ts'
+import { PointMap } from '../../common/point_map.ts'
+import { toInt } from '../../common/number.ts'
 
 const TARGET_RE = /x=(-?\d+)..(-?\d+), y=(-?\d+)..(-?\d+)/
 class Target {

@@ -1,5 +1,5 @@
 import { deepStrictEqual } from 'assert'
-import { dedent, toLines } from '../../common/string'
+import { dedent, toLines } from '../../common/string.ts'
 
 type Parsed = ReturnType<typeof parse>
 

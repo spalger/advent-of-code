@@ -1,7 +1,7 @@
 import { strictEqual } from 'assert'
-import { toInt } from '../../common/number'
-import { p3d, Point3d } from '../../common/point_3d'
-import { dedent, toLines } from '../../common/string'
+import { toInt } from '../../common/number.ts'
+import { p3d, Point3d } from '../../common/point_3d.ts'
+import { dedent, toLines } from '../../common/string.ts'
 
 function parse(input: string) {
   return toLines(input).map((line) => {

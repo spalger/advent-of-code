@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { p } from './point'
+import { p } from './point.ts'
 
 const inverse = (dir) => {
   if (dir === 'left') return 'right'

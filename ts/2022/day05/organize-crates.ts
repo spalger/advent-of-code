@@ -1,7 +1,7 @@
 import { deepStrictEqual } from 'assert'
-import { toLines, chunk } from '../../common/string'
-import { getMax } from '../../common/number'
-import { toInt } from '../../common/number'
+import { toLines, chunk } from '../../common/string.ts'
+import { getMax } from '../../common/number.ts'
+import { toInt } from '../../common/number.ts'
 
 type Change = {
   count: number

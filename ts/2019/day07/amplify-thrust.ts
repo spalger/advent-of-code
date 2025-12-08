@@ -8,8 +8,8 @@ import {
   InputReq,
   Output,
 } from '../../common/intcode-computer'
-import { iterCombinations } from '../../common/generator'
-import { repeat, shift } from '../../common/array'
+import { iterCombinations } from '../../common/generator.ts'
+import { repeat, shift } from '../../common/array.ts'
 
 function determineOutputThrust(phases: number[], code: string | IntSource) {
   let output = 0n

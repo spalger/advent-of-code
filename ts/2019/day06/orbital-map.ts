@@ -1,10 +1,13 @@
 import { strictEqual } from 'assert'
 
-import { toLines, dedent } from '../../common/string'
+import { toLines, dedent } from '../../common/string.ts'
 
 type Planets = Map<string, Planet>
 class Planet {
-  constructor(public readonly name: string) {}
+  public readonly name: string
+  constructor(name: string) {
+    this.name = name
+  }
   parent?: Planet
 
   _distanceToCom?: number

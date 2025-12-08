@@ -1,4 +1,4 @@
-import { toInt } from './number'
+import { toInt } from './number.ts'
 
 /**
  * Parse "int-int" as a pair of integer numbers representing a range.

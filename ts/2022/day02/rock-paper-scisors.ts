@@ -1,6 +1,6 @@
 import { strictEqual } from 'assert'
 
-import { dedent, toLines } from '../../common/string'
+import { dedent, toLines } from '../../common/string.ts'
 
 const ROCK = Symbol('rock')
 const PAPER = Symbol('paper')

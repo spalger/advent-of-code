@@ -1,8 +1,8 @@
 import { deepStrictEqual } from 'assert'
-import { dedent, toLines } from '../../common/string'
-import { PointMap } from '../../common/point_map'
-import { toInt } from '../../common/number'
-import { p } from '../../common/point'
+import { dedent, toLines } from '../../common/string.ts'
+import { PointMap } from '../../common/point_map.ts'
+import { toInt } from '../../common/number.ts'
+import { p } from '../../common/point.ts'
 
 function parse(input: string) {
   return PointMap.fromGenerator(function* () {

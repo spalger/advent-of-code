@@ -1,8 +1,8 @@
 import { strictEqual } from 'assert'
 
-import { toLines } from '../../common/string'
-import { p, Point } from '../../common/point'
-import { bitsToInt } from '../../common/number'
+import { toLines } from '../../common/string.ts'
+import { p, Point } from '../../common/point.ts'
+import { bitsToInt } from '../../common/number.ts'
 
 type Bit = 1 | 0
 const charToBit = (c: string): Bit => (c === '#' ? 1 : 0)

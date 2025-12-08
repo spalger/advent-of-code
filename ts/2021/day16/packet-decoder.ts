@@ -1,5 +1,5 @@
 import { strictEqual } from 'assert'
-import { bitsToInt } from '../../common/number'
+import { bitsToInt } from '../../common/number.ts'
 
 const HEX = {
   '0': [0, 0, 0, 0],

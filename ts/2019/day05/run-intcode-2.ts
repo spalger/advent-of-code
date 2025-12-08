@@ -1,7 +1,7 @@
 import { deepStrictEqual } from 'assert'
 
-import { pop } from '../../common/array'
-import { runIntCode } from '../../common/intcode-computer'
+import { pop } from '../../common/array.ts'
+import { runIntCode } from '../../common/intcode-computer.ts'
 
 export function test() {
   deepStrictEqual(runIntCode(`1002,4,3,4,33`, []), [])

@@ -1,4 +1,4 @@
-import { dedent, toLines } from '../../common/string'
+import { dedent, toLines } from '../../common/string.ts'
 
 class BoxId {
   static parse(id: string) {

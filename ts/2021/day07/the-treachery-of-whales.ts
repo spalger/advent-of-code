@@ -1,4 +1,4 @@
-import { toInt } from '../../common/number'
+import { toInt } from '../../common/number.ts'
 
 type CostCalc = (from: number, to: number) => number
 

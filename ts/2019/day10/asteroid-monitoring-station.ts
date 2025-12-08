@@ -1,8 +1,8 @@
 import { strictEqual, deepStrictEqual } from 'assert'
 
-import { p, Point } from '../../common/point'
-import { toLines, dedent } from '../../common/string'
-import { shift } from '../../common/array'
+import { p, Point } from '../../common/point.ts'
+import { toLines, dedent } from '../../common/string.ts'
+import { shift } from '../../common/array.ts'
 
 class AsteroidMap {
   constructor(

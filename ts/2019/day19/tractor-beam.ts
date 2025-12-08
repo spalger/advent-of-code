@@ -1,7 +1,7 @@
-import { runIntCode } from '../../common/intcode-computer'
-import { PointMap } from '../../common/point_map'
-import { p, Point } from '../../common/point'
-import { memoize } from '../../common/fn'
+import { runIntCode } from '../../common/intcode-computer.ts'
+import { PointMap } from '../../common/point_map.ts'
+import { p, Point } from '../../common/point.ts'
+import { memoize } from '../../common/fn.ts'
 import chalk from 'chalk'
 
 type Ent = '#' | '.'

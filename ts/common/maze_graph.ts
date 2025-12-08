@@ -1,9 +1,9 @@
 import chalk from 'chalk'
 import stripAnsi from 'strip-ansi'
 
-import { PointMap } from './point_map'
-import { Point } from './point'
-import { shift, last } from './array'
+import { PointMap } from './point_map.ts'
+import { Point } from './point.ts'
+import { shift, last } from './array.ts'
 
 const colors = [
   chalk.cyan,
@@ -116,12 +116,21 @@ export class MazeGraph<Ent> {
     return new MazeGraph<Ent>(startNodes, nodes, map, baseMap)
   }
 
+  public readonly starts: Set<Node<Ent>>
+  public readonly nodes: Set<Node<Ent>>
+  public readonly map: PointMap<Ent | '#' | '.'>
+  public readonly baseMap?: PointMap<unknown>
   private constructor(
-    public readonly starts: Set<Node<Ent>>,
-    public readonly nodes: Set<Node<Ent>>,
-    public readonly map: PointMap<Ent | '#' | '.'>,
-    public readonly baseMap?: PointMap<unknown>,
-  ) {}
+    starts: Set<Node<Ent>>,
+    nodes: Set<Node<Ent>>,
+    map: PointMap<Ent | '#' | '.'>,
+    baseMap?: PointMap<unknown>,
+  ) {
+    this.starts = starts
+    this.nodes = nodes
+    this.map = map
+    this.baseMap = baseMap
+  }
 
   toString() {
     const SPACE = '.'

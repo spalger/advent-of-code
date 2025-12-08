@@ -1,8 +1,8 @@
 import { strictEqual } from 'assert'
 
-import { dedent, toLines } from '../../common/string'
-import { toInt } from '../../common/number'
-import { Point3d } from '../../common/point_3d'
+import { dedent, toLines } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
+import { Point3d } from '../../common/point_3d.ts'
 
 const INSTRUCTION_RE =
   /^(on|off) x=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)$/

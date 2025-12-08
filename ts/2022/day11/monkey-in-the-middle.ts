@@ -1,6 +1,6 @@
 import { deepStrictEqual } from 'assert'
-import { dedent, toLines } from '../../common/string'
-import { toInt } from '../../common/number'
+import { dedent, toLines } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
 
 const pref = (prefix: string, str: string) => {
   const index = str.indexOf(prefix)

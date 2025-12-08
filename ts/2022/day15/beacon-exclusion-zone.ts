@@ -1,8 +1,8 @@
 import { strictEqual } from 'assert'
-import { toLines } from '../../common/string'
-import { toInt } from '../../common/number'
-import { p, Point } from '../../common/point'
-import { last } from '../../common/array'
+import { toLines } from '../../common/string.ts'
+import { toInt } from '../../common/number.ts'
+import { p, Point } from '../../common/point.ts'
+import { last } from '../../common/array.ts'
 
 const SENSOR_READING_RE =
   /^Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)$/

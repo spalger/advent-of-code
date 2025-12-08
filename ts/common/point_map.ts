@@ -1,6 +1,6 @@
-import { p, Point } from './point'
-import { repeat } from './array'
-import { toLines } from './string'
+import { p, Point } from './point.ts'
+import { repeat } from './array.ts'
+import { toLines } from './string.ts'
 
 export class PointMap<Ent> {
   static fromStringOf<T extends string>(input: string, entTypes: T[]) {
@@ -73,8 +73,10 @@ export class PointMap<Ent> {
   public maxX = -Infinity
   public minY = Infinity
   public maxY = -Infinity
+  public readonly points: Map<Point, Ent>
 
-  constructor(public readonly points: Map<Point, Ent>) {
+  constructor(points: Map<Point, Ent>) {
+    this.points = points
     this.resetBounds()
   }
 

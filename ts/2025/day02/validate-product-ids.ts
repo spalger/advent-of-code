@@ -1,8 +1,8 @@
 import { strictEqual } from 'assert'
 
-import { memoize } from '../../common/fn'
-import { factors, isOdd } from '../../common/number'
-import { getSum } from '../../common/big_int'
+import { memoize } from '../../common/fn.ts'
+import { factors, isOdd } from '../../common/number.ts'
+import { getSum } from '../../common/big_int.ts'
 
 const memoizedFactors = memoize(factors)
 

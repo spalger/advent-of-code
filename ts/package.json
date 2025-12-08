@@ -5,23 +5,22 @@
   "license": "MIT",
   "author": "spalger <spalger@users.noreply.github.com>",
   "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": "24"
+  },
   "dependencies": {
-    "@babel/core": "*",
-    "@babel/plugin-proposal-class-properties": "*",
-    "@babel/plugin-transform-modules-commonjs": "*",
-    "@babel/preset-typescript": "*",
-    "@babel/register": "*",
-    "@types/node": "*",
+    "@types/node": "24",
     "@typescript-eslint/eslint-plugin": "*",
     "@typescript-eslint/parser": "*",
     "chalk": "^4.1.0",
     "eslint": "*",
     "eslint-config-prettier": "*",
     "eslint-plugin-prettier": "*",
-    "getopts": "^2.2.5",
+    "getopts": "github:jorgebucaran/getopts",
     "johnson-trotter": "^0.1.1",
     "prettier": "*",
     "strip-ansi": "^6.0.0",
-    "typescript": "*"
+    "typescript": "^5.9.3"
   }
 }

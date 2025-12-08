@@ -1,4 +1,4 @@
-import { dedent } from '../../common//string'
+import { dedent } from '../../common//string.ts'
 
 function parseDeck(chunk: string) {
   return chunk
