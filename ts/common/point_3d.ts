@@ -1,3 +1,16 @@
+const point3dCache: Point3d[][][] = []
+
+export function p3d(x: number, y: number, z: number) {
+  point3dCache[x] ??= []
+  point3dCache[x][y] ??= []
+
+  if (!point3dCache[x][y][z]) {
+    return (point3dCache[x][y][z] = new Point3d(x, y, z))
+  } else {
+    return point3dCache[x][y][z]
+  }
+}
+
 export class Point3d {
   static min(a: Point3d, b: Point3d) {
     return new Point3d(
@@ -45,6 +58,14 @@ export class Point3d {
       Math.abs(this.x - other.x) +
       Math.abs(this.y - other.y) +
       Math.abs(this.z - other.z)
+    )
+  }
+
+  straightDist(other: Point3d) {
+    return Math.sqrt(
+      (this.x - other.x) ** 2 +
+        (this.y - other.y) ** 2 +
+        (this.z - other.z) ** 2,
     )
   }
 }
