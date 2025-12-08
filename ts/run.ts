@@ -2,8 +2,10 @@ import { performance } from 'perf_hooks'
 import Path from 'path'
 import Fs from 'fs'
 import chalk from 'chalk'
-import { getopts } from 'getopts'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
+const __dirname = import.meta.dirname
 const norm = (path: string) => path.split(Path.sep).join('/')
 const relnorm = (path: string) => norm(Path.relative(__dirname, path))
 
@@ -74,16 +76,27 @@ function exec(name: string, fn: (input?: string) => void, input?: string) {
   console.log(`${chalk.grey(`took ${formatTime(end - start)}`)}\n`)
 }
 
-const flags = getopts(process.argv.slice(2), {
-  boolean: ['test'],
-  string: ['part'],
-  alias: {
-    t: 'test',
-    p: 'part',
-  },
-})
+const flags = await yargs(hideBin(process.argv))
+  .positional('selector', {
+    type: 'string',
+    description: 'year/day/solution selector',
+    default: '.',
+  })
+  .option('test', {
+    type: 'boolean',
+    alias: 't',
+    description: 'Run test cases only',
+    default: false,
+  })
+  .option('part', {
+    type: 'string',
+    alias: 'p',
+    description: 'Run a specific part only (1 or 2)',
+    default: '',
+  })
+  .parse()
 
-const selector = relnorm(Path.resolve(flags._[0] || '.'))
+const selector = relnorm(Path.resolve(flags.selector))
 const [yearSelector, daySelector, solutionSelector] = selector
   .split('/')
   .map((input) => {

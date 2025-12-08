@@ -8,7 +8,8 @@ import { Point } from '../../common/point.ts'
 import { shift } from '../../common/array.ts'
 import { memoize } from '../../common/fn.ts'
 
-const read = (p: string) => Fs.readFileSync(Path.resolve(__dirname, p), 'utf-8')
+const read = (p: string) =>
+  Fs.readFileSync(Path.resolve(import.meta.dirname, p), 'utf-8')
 
 const portalCache = new Map<string, Portal>()
 class Portal {

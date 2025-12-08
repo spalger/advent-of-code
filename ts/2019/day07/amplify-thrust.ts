@@ -4,7 +4,7 @@ import {
   parseIntCode,
   runBigIntCode,
   bigIntCodeGenerator,
-  IntSource,
+  type IntSource,
   InputReq,
   Output,
 } from '../../common/intcode-computer.ts'
