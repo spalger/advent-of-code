@@ -27,10 +27,7 @@ class SquidGame {
 
   private readonly numbers: number[]
   private readonly boards: Board[]
-  constructor(
-    numbers: number[],
-    boards: Board[],
-  ) {
+  constructor(numbers: number[], boards: Board[]) {
     this.numbers = numbers
     this.boards = boards
   }

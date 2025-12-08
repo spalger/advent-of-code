@@ -1,6 +1,10 @@
 import chalk from 'chalk'
 
-import { bigIntCodeGenerator, InputReq, Output } from '../../common/intcode-computer.ts'
+import {
+  bigIntCodeGenerator,
+  InputReq,
+  Output,
+} from '../../common/intcode-computer.ts'
 import { p, Point } from '../../common/point.ts'
 
 function paintHull(code: string, startOnWhite = false) {

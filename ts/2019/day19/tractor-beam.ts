@@ -25,12 +25,10 @@ export function part1(input: string) {
 }
 
 export function part2(input: string) {
-  const getMapEnt = memoize(
-    (p: Point): Ent => {
-      const [result] = runIntCode(input, [p.x, p.y])
-      return result === 1 ? '#' : '.'
-    },
-  )
+  const getMapEnt = memoize((p: Point): Ent => {
+    const [result] = runIntCode(input, [p.x, p.y])
+    return result === 1 ? '#' : '.'
+  })
 
   const bottomLeftDelta = p(0, -99)
   const bottomRightDelta = p(99, -99)

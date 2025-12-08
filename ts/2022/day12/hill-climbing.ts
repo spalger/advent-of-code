@@ -2,7 +2,6 @@ import { deepStrictEqual } from 'assert'
 import { dedent } from '../../common/string.ts'
 import { PointMap } from '../../common/point_map.ts'
 import { Point } from '../../common/point.ts'
-import { shift } from '../../common/array.ts'
 
 function aToN(char: string) {
   return char.charCodeAt(0) - 97
@@ -12,11 +11,7 @@ class Solver {
   readonly start: Point
   readonly end: Point
   readonly map: PointMap<number>
-  constructor(
-    start: Point,
-    end: Point,
-    map: PointMap<number>,
-  ) {
+  constructor(start: Point, end: Point, map: PointMap<number>) {
     this.start = start
     this.end = end
     this.map = map

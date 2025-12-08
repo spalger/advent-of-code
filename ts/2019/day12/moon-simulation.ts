@@ -41,10 +41,7 @@ class P3d {
 class Moon {
   readonly position: P3d
   readonly velocity: P3d
-  constructor(
-    position: P3d,
-    velocity: P3d = new P3d(0, 0, 0),
-  ) {
+  constructor(position: P3d, velocity: P3d = new P3d(0, 0, 0)) {
     this.position = position
     this.velocity = velocity
   }

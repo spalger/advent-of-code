@@ -52,11 +52,7 @@ class Path {
   readonly cost: number
   readonly history: Point[]
   readonly end: Point
-  constructor(
-    cost: number,
-    history: Point[],
-    end: Point,
-  ) {
+  constructor(cost: number, history: Point[], end: Point) {
     this.cost = cost
     this.history = history
     this.end = end

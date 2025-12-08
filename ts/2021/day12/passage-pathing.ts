@@ -35,10 +35,7 @@ class SimplePath implements Path {
 class ComplexPath implements Path {
   private readonly steps: string[]
   private readonly smallRoomRevisited: boolean
-  constructor(
-    steps: string[],
-    smallRoomRevisited: boolean = false,
-  ) {
+  constructor(steps: string[], smallRoomRevisited = false) {
     this.steps = steps
     this.smallRoomRevisited = smallRoomRevisited
   }

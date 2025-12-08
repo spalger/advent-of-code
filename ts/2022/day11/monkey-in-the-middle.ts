@@ -30,11 +30,7 @@ class Operation {
   readonly x: number | typeof OLD
   readonly op: '+' | '*'
   readonly y: number | typeof OLD
-  constructor(
-    x: number | typeof OLD,
-    op: '+' | '*',
-    y: number | typeof OLD,
-  ) {
+  constructor(x: number | typeof OLD, op: '+' | '*', y: number | typeof OLD) {
     this.x = x
     this.op = op
     this.y = y

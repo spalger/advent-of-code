@@ -15,7 +15,7 @@ class BoxId {
 
     let hasTwo = false
     let hasThree = false
-    for (const [char, count] of counts) {
+    for (const [, count] of counts) {
       if (count === 2) {
         hasTwo = true
       }
@@ -34,11 +34,7 @@ class BoxId {
   readonly hasTwo: boolean
   readonly hasThree: boolean
   private readonly compareCache = new Map<BoxId, number>()
-  constructor(
-    id: string,
-    hasTwo: boolean,
-    hasThree: boolean,
-  ) {
+  constructor(id: string, hasTwo: boolean, hasThree: boolean) {
     this.id = id
     this.hasTwo = hasTwo
     this.hasThree = hasThree

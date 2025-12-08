@@ -8,11 +8,7 @@ class AsteroidMap {
   readonly asteroids: Set<Point>
   readonly width: number
   readonly height: number
-  constructor(
-    asteroids: Set<Point>,
-    width: number,
-    height: number,
-  ) {
+  constructor(asteroids: Set<Point>, width: number, height: number) {
     this.asteroids = asteroids
     this.width = width
     this.height = height
