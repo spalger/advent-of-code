@@ -1,5 +1,5 @@
-import { p } from './point.ts'
-import { Image } from './image.ts'
+import { p } from './point.js'
+import { Image } from './image.js'
 
 export function run(input) {
   const images = input
