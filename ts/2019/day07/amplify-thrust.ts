@@ -7,7 +7,7 @@ import {
   IntSource,
   InputReq,
   Output,
-} from '../../common/intcode-computer'
+} from '../../common/intcode-computer.ts'
 import { iterCombinations } from '../../common/generator.ts'
 import { repeat, shift } from '../../common/array.ts'
 

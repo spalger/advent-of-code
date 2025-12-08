@@ -17,8 +17,11 @@ const twoAfter1 = (cup1: Cup) => {
 }
 
 class Cup {
-  public next!: Cup
-  constructor(public readonly n: number) {}
+  readonly n: number
+  next!: Cup
+  constructor(n: number) {
+    this.n = n
+  }
 }
 
 function playCupGame(

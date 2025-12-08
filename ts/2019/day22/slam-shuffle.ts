@@ -5,9 +5,11 @@ import { toInt } from '../../common/number.ts'
 import { repeat } from '../../common/array.ts'
 
 class Deck {
-  public cards: number[]
+  readonly size: number
+  cards: number[]
 
-  constructor(public readonly size: number) {
+  constructor(size: number) {
+    this.size = size
     this.cards = repeat(this.size, (i) => i)
   }
 

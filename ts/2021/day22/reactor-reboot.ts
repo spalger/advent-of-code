@@ -12,8 +12,12 @@ class Cuboid {
     return min.x < max.x && min.y < max.y && min.z < max.z
   }
 
-  public readonly volume: number
-  constructor(public readonly min: Point3d, public readonly max: Point3d) {
+  readonly min: Point3d
+  readonly max: Point3d
+  readonly volume: number
+  constructor(min: Point3d, max: Point3d) {
+    this.min = min
+    this.max = max
     if (!Cuboid.validate(min, max)) {
       throw new Error(`min or max for cuboid is invalid min=${min} max=${max}`)
     }
@@ -97,7 +101,12 @@ class ReactorState {
     return numberOn
   }
 
-  constructor(public on: boolean, public cuboid: Cuboid) {}
+  on: boolean
+  cuboid: Cuboid
+  constructor(on: boolean, cuboid: Cuboid) {
+    this.on = on
+    this.cuboid = cuboid
+  }
   reduce(other: Cuboid) {
     const intersection = this.cuboid.intersect(other)
     if (!intersection) {

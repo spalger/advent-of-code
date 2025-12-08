@@ -9,7 +9,10 @@ interface Path {
 }
 
 class SimplePath implements Path {
-  constructor(private readonly steps: string[]) {}
+  private readonly steps: string[]
+  constructor(steps: string[]) {
+    this.steps = steps
+  }
 
   getCurrentStep() {
     return this.steps[this.steps.length - 1]
@@ -30,10 +33,15 @@ class SimplePath implements Path {
 }
 
 class ComplexPath implements Path {
+  private readonly steps: string[]
+  private readonly smallRoomRevisited: boolean
   constructor(
-    private readonly steps: string[],
-    private readonly smallRoomRevisited: boolean = false,
-  ) {}
+    steps: string[],
+    smallRoomRevisited: boolean = false,
+  ) {
+    this.steps = steps
+    this.smallRoomRevisited = smallRoomRevisited
+  }
 
   getCurrentStep(): string {
     return this.steps[this.steps.length - 1]

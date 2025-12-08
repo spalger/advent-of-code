@@ -10,9 +10,11 @@ class Cavern {
     return new Cavern(PointMap.fromString(input).map(toInt))
   }
 
-  public readonly entrance: Point
-  public readonly exit: Point
-  constructor(public readonly map: PointMap<number>) {
+  readonly map: PointMap<number>
+  readonly entrance: Point
+  readonly exit: Point
+  constructor(map: PointMap<number>) {
+    this.map = map
     this.entrance = p(map.minX, map.maxY)
     this.exit = p(map.maxX, map.minY)
   }
@@ -47,11 +49,18 @@ class Cavern {
 }
 
 class Path {
+  readonly cost: number
+  readonly history: Point[]
+  readonly end: Point
   constructor(
-    public readonly cost: number,
-    public readonly history: Point[],
-    public readonly end: Point,
-  ) {}
+    cost: number,
+    history: Point[],
+    end: Point,
+  ) {
+    this.cost = cost
+    this.history = history
+    this.end = end
+  }
 
   next(cavern: Cavern) {
     const newHistory = [...this.history, this.end]

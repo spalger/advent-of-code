@@ -20,7 +20,10 @@ const getCommon = (...groups: string[][]) => {
 }
 
 class Rucksack {
-  constructor(public readonly items: string[]) {}
+  readonly items: string[]
+  constructor(items: string[]) {
+    this.items = items
+  }
 
   getCommonPriorityOfSides() {
     return priority(

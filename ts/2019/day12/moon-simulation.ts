@@ -18,7 +18,14 @@ const sum = <T>(arr: readonly T[], fn: (i: T) => number): number =>
   arr.reduce((acc, i) => acc + fn(i), 0)
 
 class P3d {
-  constructor(public x: number, public y: number, public z: number) {}
+  x: number
+  y: number
+  z: number
+  constructor(x: number, y: number, z: number) {
+    this.x = x
+    this.y = y
+    this.z = z
+  }
 
   add(other: P3d) {
     this.x += other.x
@@ -32,10 +39,15 @@ class P3d {
 }
 
 class Moon {
+  readonly position: P3d
+  readonly velocity: P3d
   constructor(
-    readonly position: P3d,
-    readonly velocity: P3d = new P3d(0, 0, 0),
-  ) {}
+    position: P3d,
+    velocity: P3d = new P3d(0, 0, 0),
+  ) {
+    this.position = position
+    this.velocity = velocity
+  }
 
   getEnergy() {
     return (

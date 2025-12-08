@@ -5,11 +5,18 @@ import { toLines, dedent } from '../../common/string.ts'
 import { shift } from '../../common/array.ts'
 
 class AsteroidMap {
+  readonly asteroids: Set<Point>
+  readonly width: number
+  readonly height: number
   constructor(
-    public readonly asteroids: Set<Point>,
-    public readonly width: number,
-    public readonly height: number,
-  ) {}
+    asteroids: Set<Point>,
+    width: number,
+    height: number,
+  ) {
+    this.asteroids = asteroids
+    this.width = width
+    this.height = height
+  }
 
   isInBounds(p: Point) {
     return p.x >= 0 && p.x < this.width && p.y >= 0 && p.y < this.height

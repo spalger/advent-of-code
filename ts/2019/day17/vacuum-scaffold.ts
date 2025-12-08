@@ -117,7 +117,10 @@ class Sequence {
     }
   }
 
-  constructor(public readonly segment: Path) {}
+  readonly segment: Path
+  constructor(segment: Path) {
+    this.segment = segment
+  }
 
   replaceInPath(path: PathWithPatterns) {
     const replaced: PathWithPatterns = []

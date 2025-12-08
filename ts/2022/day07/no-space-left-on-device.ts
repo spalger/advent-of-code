@@ -3,11 +3,21 @@ import { dedent, toLines } from '../../common/string.ts'
 import { toInt } from '../../common/number.ts'
 
 class File {
-  constructor(public readonly name: string, public readonly size: number) {}
+  readonly name: string
+  readonly size: number
+  constructor(name: string, size: number) {
+    this.name = name
+    this.size = size
+  }
 }
 class Dir {
+  readonly name: string
+  readonly parent?: Dir
   private readonly entries = new Map<string, File | Dir>()
-  constructor(public readonly name: string, public readonly parent?: Dir) {}
+  constructor(name: string, parent?: Dir) {
+    this.name = name
+    this.parent = parent
+  }
 
   private _metaCache?: { size?: number; dirs?: Dir[] }
 

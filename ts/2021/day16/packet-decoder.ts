@@ -36,8 +36,11 @@ class BitReader {
     )
   }
 
-  public cursor = 0
-  constructor(public readonly bits: number[]) {}
+  readonly bits: number[]
+  cursor = 0
+  constructor(bits: number[]) {
+    this.bits = bits
+  }
 
   next() {
     const bit = this.bits[this.cursor]
@@ -106,11 +109,13 @@ class Packet {
     return new Packet(BitReader.fromHex(hex))
   }
 
-  public readonly version: number
-  public readonly type: number
-  public readonly value: number | Packet[]
+  readonly bits: BitReader
+  readonly version: number
+  readonly type: number
+  readonly value: number | Packet[]
 
-  constructor(public readonly bits: BitReader) {
+  constructor(bits: BitReader) {
+    this.bits = bits
     // read the header
     this.version = this.bits.readInt(3)
     this.type = this.bits.readInt(3)

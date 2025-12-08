@@ -25,10 +25,15 @@ class SquidGame {
     return new SquidGame(numbers, boards)
   }
 
+  private readonly numbers: number[]
+  private readonly boards: Board[]
   constructor(
-    private readonly numbers: number[],
-    private readonly boards: Board[],
-  ) {}
+    numbers: number[],
+    boards: Board[],
+  ) {
+    this.numbers = numbers
+    this.boards = boards
+  }
 
   play() {
     for (const number of this.numbers) {

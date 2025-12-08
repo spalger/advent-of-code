@@ -32,7 +32,12 @@ class GameState {
     return gs
   }
 
-  constructor(public players: PlayerStates, public turn: Player) {}
+  players: PlayerStates
+  turn: Player
+  constructor(players: PlayerStates, turn: Player) {
+    this.players = players
+    this.turn = turn
+  }
 
   next(roll: number) {
     return GameState.get(

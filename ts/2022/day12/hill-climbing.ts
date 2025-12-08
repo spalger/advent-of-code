@@ -9,11 +9,18 @@ function aToN(char: string) {
 }
 
 class Solver {
+  readonly start: Point
+  readonly end: Point
+  readonly map: PointMap<number>
   constructor(
-    public readonly start: Point,
-    public readonly end: Point,
-    public readonly map: PointMap<number>,
-  ) {}
+    start: Point,
+    end: Point,
+    map: PointMap<number>,
+  ) {
+    this.start = start
+    this.end = end
+    this.map = map
+  }
 
   private readonly fastestCache = new Map<Point, Map<Point, Point[] | null>>()
   setFastestPath(from: Point, to: Point, path: Point[] | null) {

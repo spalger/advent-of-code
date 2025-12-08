@@ -76,7 +76,10 @@ export function parseIntCode(code: string) {
 export class InputReq {}
 
 export class Output {
-  constructor(public readonly output: bigint) {}
+  readonly output: bigint
+  constructor(output: bigint) {
+    this.output = output
+  }
 }
 
 export function runBigIntCode(

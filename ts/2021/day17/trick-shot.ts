@@ -17,15 +17,21 @@ class Target {
     return new Target(p(xs[0], ys[1]), p(xs[1], ys[0]))
   }
 
-  public readonly points: Map<Point, string>
-  constructor(public readonly tl: Point, public readonly br: Point) {
+  readonly tl: Point
+  readonly br: Point
+  readonly points: Map<Point, string>
+  constructor(tl: Point, br: Point) {
+    this.tl = tl
+    this.br = br
     this.points = PointMap.fromRange(tl, br, () => 'T').points
   }
 }
 
 class Path {
+  readonly vel: Point
   readonly valid: boolean
-  constructor(readonly vel: Point, t: Target) {
+  constructor(vel: Point, t: Target) {
+    this.vel = vel
     let pos = p(0, 0)
     let v = vel
 

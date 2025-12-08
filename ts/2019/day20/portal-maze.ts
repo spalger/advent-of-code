@@ -23,8 +23,11 @@ class Portal {
     return portal
   }
 
-  public i = portalCache.size
-  private constructor(public readonly label: string) {}
+  readonly label: string
+  i = portalCache.size
+  private constructor(label: string) {
+    this.label = label
+  }
   toString() {
     return `@`
   }

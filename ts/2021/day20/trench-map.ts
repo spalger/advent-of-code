@@ -16,12 +16,21 @@ class Bounds {
     return bounds
   }
 
+  readonly minX: number
+  readonly maxX: number
+  readonly minY: number
+  readonly maxY: number
   constructor(
-    readonly minX: number,
-    readonly maxX: number,
-    readonly minY: number,
-    readonly maxY: number,
-  ) {}
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+  ) {
+    this.minX = minX
+    this.maxX = maxX
+    this.minY = minY
+    this.maxY = maxY
+  }
 
   isInside(point: Point) {
     return (
@@ -73,13 +82,24 @@ class Img {
     return new Img(algo, 0, 0, active, Bounds.forPoints(active))
   }
 
+  algo: Bit[]
+  infinityBit: Bit
+  iterations: number
+  active: Set<Point>
+  bounds: Bounds
   constructor(
-    public algo: Bit[],
-    public infinityBit: Bit,
-    public iterations: number,
-    public active: Set<Point>,
-    public bounds: Bounds,
-  ) {}
+    algo: Bit[],
+    infinityBit: Bit,
+    iterations: number,
+    active: Set<Point>,
+    bounds: Bounds,
+  ) {
+    this.algo = algo
+    this.infinityBit = infinityBit
+    this.iterations = iterations
+    this.active = active
+    this.bounds = bounds
+  }
 
   readBit(point: Point) {
     const active = this.bounds.isInside(point)

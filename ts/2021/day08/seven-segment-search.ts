@@ -18,8 +18,10 @@ class Reading {
     return reading
   }
 
-  public readonly length: number
-  constructor(public readonly segments: string[]) {
+  readonly segments: string[]
+  readonly length: number
+  constructor(segments: string[]) {
+    this.segments = segments
     this.length = this.segments.length
   }
 
@@ -42,9 +44,13 @@ class Reading {
 }
 
 class Digit {
-  public readonly length: number
-  public readonly reading: Reading
-  constructor(public readonly name: number, public readonly segments: string) {
+  readonly name: number
+  readonly segments: string
+  readonly length: number
+  readonly reading: Reading
+  constructor(name: number, segments: string) {
+    this.name = name
+    this.segments = segments
     this.length = this.segments.length
     this.reading = Reading.fromSegments(this.segments)
   }

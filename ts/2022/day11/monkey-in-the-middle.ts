@@ -27,11 +27,18 @@ class Operation {
     )
   }
 
+  readonly x: number | typeof OLD
+  readonly op: '+' | '*'
+  readonly y: number | typeof OLD
   constructor(
-    public readonly x: number | typeof OLD,
-    public readonly op: '+' | '*',
-    public readonly y: number | typeof OLD,
-  ) {}
+    x: number | typeof OLD,
+    op: '+' | '*',
+    y: number | typeof OLD,
+  ) {
+    this.x = x
+    this.op = op
+    this.y = y
+  }
 
   eval(old: number) {
     const x = this.x === OLD ? old : this.x
@@ -62,14 +69,27 @@ class Monkey {
     )
   }
 
+  readonly id: number
+  readonly items: number[]
+  readonly op: Operation
+  readonly divisibleBy: number
+  readonly targetIfTrue: number
+  readonly targetIfFalse: number
   constructor(
-    public readonly id: number,
-    public readonly items: number[],
-    public readonly op: Operation,
-    public readonly divisibleBy: number,
-    public readonly targetIfTrue: number,
-    public readonly targetIfFalse: number,
-  ) {}
+    id: number,
+    items: number[],
+    op: Operation,
+    divisibleBy: number,
+    targetIfTrue: number,
+    targetIfFalse: number,
+  ) {
+    this.id = id
+    this.items = items
+    this.op = op
+    this.divisibleBy = divisibleBy
+    this.targetIfTrue = targetIfTrue
+    this.targetIfFalse = targetIfFalse
+  }
 }
 
 function parse(input: string) {

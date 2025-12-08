@@ -30,12 +30,19 @@ class BoxId {
     return new BoxId(id, hasTwo, hasThree)
   }
 
+  readonly id: string
+  readonly hasTwo: boolean
+  readonly hasThree: boolean
   private readonly compareCache = new Map<BoxId, number>()
   constructor(
-    public readonly id: string,
-    public readonly hasTwo: boolean,
-    public readonly hasThree: boolean,
-  ) {}
+    id: string,
+    hasTwo: boolean,
+    hasThree: boolean,
+  ) {
+    this.id = id
+    this.hasTwo = hasTwo
+    this.hasThree = hasThree
+  }
 
   compare(other: BoxId) {
     const cached = this.compareCache.get(other) ?? other.compareCache.get(this)

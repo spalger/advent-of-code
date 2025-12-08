@@ -4,7 +4,7 @@ import {
   bigIntCodeGenerator,
   InputReq,
   Output,
-} from '../../common/intcode-computer'
+} from '../../common/intcode-computer.ts'
 import { p, Point } from '../../common/point.ts'
 import { ElementType } from '../../common/ts.ts'
 

@@ -7,7 +7,12 @@ import { MazeGraph, Node } from '../../common/maze_graph.ts'
 import { PointMap } from '../../common/point_map.ts'
 
 class Key {
-  constructor(public readonly name: string, public readonly door: string) {}
+  readonly name: string
+  readonly door: string
+  constructor(name: string, door: string) {
+    this.name = name
+    this.door = door
+  }
 
   toString() {
     return this.name
@@ -15,7 +20,10 @@ class Key {
 }
 
 class Door {
-  constructor(public readonly name: string) {}
+  readonly name: string
+  constructor(name: string) {
+    this.name = name
+  }
 
   toString() {
     return this.name

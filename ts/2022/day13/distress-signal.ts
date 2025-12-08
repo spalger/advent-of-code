@@ -16,19 +16,11 @@ function parse(input: string) {
   return pairs
 }
 
-enum Result {
-  VALID,
-  INVALID,
-  CONT,
-}
+type Result = 'valid' | 'invalid' | 'continue'
 
 function compare(left: number | Packet, right: number | Packet): Result {
   if (typeof left === 'number' && typeof right === 'number') {
-    return left === right
-      ? Result.CONT
-      : left < right
-      ? Result.VALID
-      : Result.INVALID
+    return left === right ? 'continue' : left < right ? 'valid' : 'invalid'
   }
 
   if (!Array.isArray(left)) {
@@ -43,21 +35,21 @@ function compare(left: number | Packet, right: number | Packet): Result {
 
   for (let i = 0; ; i++) {
     if (i === sameLen) {
-      return Result.CONT
+      return 'continue'
     }
 
     const l = left[i]
     const r = right[i]
     if (l === undefined) {
-      return Result.VALID
+      return 'valid'
     }
 
     if (r === undefined) {
-      return Result.INVALID
+      return 'invalid'
     }
 
     const sub = compare(l, r)
-    if (sub !== Result.CONT) {
+    if (sub !== 'continue') {
       return sub
     }
   }
@@ -66,7 +58,7 @@ function compare(left: number | Packet, right: number | Packet): Result {
 function validate(pairs: Pairs) {
   return pairs.reduce(
     (acc, [left, right], i) =>
-      acc + (compare(left, right) === Result.VALID ? i + 1 : 0),
+      acc + (compare(left, right) === 'valid' ? i + 1 : 0),
     0,
   )
 }
@@ -86,11 +78,11 @@ export function findDecoderKey(input: Packet[]) {
   const div2 = [[6]]
   const sorted = [...input, div1, div2].sort((a, b) => {
     switch (compare(a, b)) {
-      case Result.VALID:
+      case 'valid':
         return -1
-      case Result.CONT:
+      case 'continue':
         return 0
-      case Result.INVALID:
+      case 'invalid':
         return 1
     }
   })

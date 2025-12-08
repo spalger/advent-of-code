@@ -32,7 +32,10 @@ class Vents {
     return new Vents(lines)
   }
 
-  constructor(private readonly lines: Line[]) {}
+  private readonly lines: Line[]
+  constructor(lines: Line[]) {
+    this.lines = lines
+  }
 
   findOverlappingPoints() {
     const overlapping = new Set<Point>()
@@ -55,7 +58,11 @@ class Vents {
 }
 
 class HorizontalLine {
-  constructor(public readonly start: Point, public readonly end: Point) {
+  start: Point
+  end: Point
+  constructor(start: Point, end: Point) {
+    this.start = start
+    this.end = end
     if (this.start.x > this.end.x) {
       const realStart = this.end
       this.end = this.start
@@ -81,7 +88,11 @@ class HorizontalLine {
 }
 
 class VerticalLine {
-  constructor(public readonly start: Point, public readonly end: Point) {
+  start: Point
+  end: Point
+  constructor(start: Point, end: Point) {
+    this.start = start
+    this.end = end
     if (this.start.y > this.end.y) {
       const realStart = this.end
       this.end = this.start
@@ -107,8 +118,12 @@ class VerticalLine {
 }
 
 class DiagonalLine {
-  public readonly points: Set<Point>
-  constructor(public readonly start: Point, public readonly end: Point) {
+  readonly start: Point
+  readonly end: Point
+  readonly points: Set<Point>
+  constructor(start: Point, end: Point) {
+    this.start = start
+    this.end = end
     this.points = new Set()
     const slope = this.start.slopeTo(this.end)
     for (let p = this.start; p !== this.end; p = p.add(slope)) {

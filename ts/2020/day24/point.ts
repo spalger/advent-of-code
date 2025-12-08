@@ -15,7 +15,12 @@ export const p = (x: number, y: number) => {
 }
 
 export class HexPoint {
-  constructor(public readonly x: number, public readonly y: number) {}
+  readonly x: number
+  readonly y: number
+  constructor(x: number, y: number) {
+    this.x = x
+    this.y = y
+  }
 
   nw() {
     return p(this.x - 1, this.y + 1)
