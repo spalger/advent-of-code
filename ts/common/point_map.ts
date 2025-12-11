@@ -1,6 +1,14 @@
 import { p, type Point } from './point.ts'
 import { repeat } from './array.ts'
 import { toLines } from './string.ts'
+import { type Line } from './line.ts'
+
+function area(from: Point, to: Point) {
+  return {
+    topLeft: p(Math.min(from.x, to.x), Math.max(from.y, to.y)),
+    bottomRight: p(Math.max(from.x, to.x), Math.min(from.y, to.y)),
+  }
+}
 
 export class PointMap<Ent> {
   static fromStringOf<T extends string>(input: string, entTypes: T[]) {
@@ -52,10 +60,11 @@ export class PointMap<Ent> {
   }
 
   static fromRange<Ent>(
-    topLeft: Point,
-    bottomRight: Point,
+    from: Point,
+    to: Point,
     getEnt: (p: Point) => Ent | undefined,
   ) {
+    const { topLeft, bottomRight } = area(from, to)
     const points = new Map<Point, Ent>()
     for (let x = topLeft.x; x <= bottomRight.x; x++) {
       for (let y = topLeft.y; y >= bottomRight.y; y--) {
@@ -67,6 +76,60 @@ export class PointMap<Ent> {
       }
     }
     return new PointMap(points)
+  }
+
+  static ofPolygon(vertices: Point[]) {
+    const hollow = PointMap.fromGenerator(function* () {
+      const n = vertices.length
+      for (let i = 0; i < n; i++) {
+        const start = vertices[i]
+        const end = vertices[(i + 1) % n]
+
+        const dx = Math.sign(end.x - start.x)
+        const dy = Math.sign(end.y - start.y)
+
+        let current = start
+        yield [current, '#'] as const
+
+        while (current.x !== end.x || current.y !== end.y) {
+          current = p(current.x + dx, current.y + dy)
+          yield [current, '#'] as const
+        }
+      }
+    })
+
+    // fill in the hollow shape
+    return PointMap.fromGenerator(function* () {
+      for (let y = hollow.maxY; y >= hollow.minY; y--) {
+        let state: null | 'entering' | 'exitting' | 'inside' = null
+        for (let x = hollow.minX; x <= hollow.maxX; x++) {
+          const point = p(x, y)
+          const ent = hollow.points.get(point)
+
+          // when we hit space after entering a wall
+          if (ent === undefined) {
+            if (state === 'entering') {
+              state = 'inside'
+            }
+            if (state === 'exitting') {
+              state = null
+            }
+          }
+
+          // while inside the polygon, force the entity to be '#'
+          yield [point, state === 'inside' ? '#' : ent ?? ' '] as const
+
+          if (ent === '#') {
+            if (state === null) {
+              state = 'entering'
+            }
+            if (state === 'inside') {
+              state = 'exitting'
+            }
+          }
+        }
+      }
+    })
   }
 
   public minX = Infinity
@@ -283,5 +346,44 @@ export class PointMap<Ent> {
       throw new Error('point is not in map')
     }
     this.points.set(point, ent)
+  }
+
+  drawLine(line: Line, ent: Ent) {
+    const dx = Math.sign(line.to.x - line.from.x)
+    const dy = Math.sign(line.to.y - line.from.y)
+
+    let current = line.from
+    this.update(current, ent)
+
+    while (current.x !== line.to.x || current.y !== line.to.y) {
+      current = p(current.x + dx, current.y + dy)
+      this.update(current, ent)
+    }
+  }
+
+  drawSquare(from: Point, to: Point, getEnt: (point: Point, ent: Ent) => Ent) {
+    const { topLeft, bottomRight } = area(from, to)
+    for (let x = topLeft.x; x <= bottomRight.x; x++) {
+      for (let y = topLeft.y; y >= bottomRight.y; y--) {
+        const point = p(x, y)
+        this.update(point, getEnt(point, this.get(point)))
+      }
+    }
+  }
+
+  slice(from: Point, to: Point) {
+    const { topLeft, bottomRight } = area(from, to)
+    return PointMap.fromRange(topLeft, bottomRight, (point) =>
+      this.points.get(point),
+    )
+  }
+
+  every(test: (ent: Ent, point: Point) => boolean) {
+    for (const [point, ent] of this.points) {
+      if (!test(ent, point)) {
+        return false
+      }
+    }
+    return true
   }
 }
