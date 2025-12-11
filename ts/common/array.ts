@@ -35,3 +35,23 @@ export function last<T>(arr: T[]): T {
 
   return arr[arr.length - 1]
 }
+
+export function allPermutations<T>(arr: T[]): T[][] {
+  if (arr.length === 0) {
+    return [[]]
+  }
+
+  const result: T[][] = []
+
+  for (let i = 0; i < arr.length; i++) {
+    const current = arr[i]
+    const remaining = [...arr.slice(0, i), ...arr.slice(i + 1)]
+    const remainingPermutations = allPermutations(remaining)
+
+    for (const perm of remainingPermutations) {
+      result.push([current, ...perm])
+    }
+  }
+
+  return result
+}
